@@ -1,6 +1,6 @@
 # Omnia Product Team Artifacts (PUBLIC!)
 
-**DISCLAIMER: Everything you commit to this repository is publicly available on the internet for unauthenticated and unauthorized users. Do not commit sensitive information, or any other intellectual property not suited for the public!**
+**DISCLAIMER: Everything you commit to this repository is publicly available on the internet for unauthenticated and unauthorized users. Consider content audience before pushing to this repository!**
 
 This repository is used for publicly available artifacts necessary in different parts of the Omnia solutions.
 

@@ -1,4 +1,10 @@
-# Update Management - Turn Off VMs
+# Runbook: Update Management - Turn Off VMs
+
+## Details
+
+- Runbook type: PowerShell
+- Created by: Tor Ivar Asbølmo
+- Status: Work in progress
 
 ## Intended usage
 

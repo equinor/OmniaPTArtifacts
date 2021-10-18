@@ -1,5 +1,11 @@
 # Update Management - Turn On VMs
 
+## Details
+
+- Runbook type: PowerShell
+- Created by: Tor Ivar Asbølmo
+- Status: Work in progress
+
 ## Intended usage
 
 This script is intended to be run as a part of Update Management Pre/Post scripts.

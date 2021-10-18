@@ -8,7 +8,7 @@ This script is intended to be run as a part of Update Management Pre/Post script
 
 It requires:
 
-- A valid RunAsAccount.
+- A valid RunAsAccount or Managed Identity.
 - the module 'ThreadJobs' from the PowerShell Gallery.
 - Az-modules
   - Az.Accounts
@@ -16,6 +16,17 @@ It requires:
   - Az.Resources
   - Az.Compute
 - the usage of the [Turn On VMs](../turnonvms/) script as a pre-deployment script.
+
+### Resource Permissions
+
+The RunAsAccount or Managed Identity needs the following permissions on your subscription scope:
+
+- Virtual Machine Contributor or custom role with permission for read/start/stop/deallocate Virtual Machine.
+- Reader.
+
+The RunAsAccount or Managed Identity needs the following permissions on your automation account:
+
+- Contributor.
 
 ## Description
 

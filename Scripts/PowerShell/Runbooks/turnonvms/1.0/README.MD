@@ -15,7 +15,7 @@ It requires:
   - Az.Automation
   - Az.Resources
   - Az.Compute
-- the usage of the [Turn Off VMs](../turnonvms/) script as a post-deployment script.
+- the usage of the [Turn Off VMs](../../turnonvms/1.0/) script as a post-deployment script.
 
 ### Resource Permissions
 
@@ -31,4 +31,4 @@ The RunAsAccount or Managed Identity needs the following permissions on your aut
 ## Description
 
 This script will ensure all Azure VMs in the Update Deployment are running so they recieve updates.
-This script works with the [Turn Off VMs](../turnoffvms/) script. It will store the names of machines that were started in an Automation variable so only those machines are turned back off when the deployment is finished.
+This script works with the [Turn Off VMs](../../turnoffvms/) script. It will store the names of machines that were started in an Automation variable so only those machines are turned back off when the deployment is finished.

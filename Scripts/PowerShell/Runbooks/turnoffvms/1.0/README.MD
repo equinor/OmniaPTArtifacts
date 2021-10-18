@@ -15,7 +15,7 @@ It requires:
   - Az.Automation
   - Az.Resources
   - Az.Compute
-- the usage of the [Turn On VMs](../turnonvms/) script as a pre-deployment script.
+- the usage of the [Turn On VMs](../../turnonvms/1.0/) script as a pre-deployment script.
 
 ### Resource Permissions
 
@@ -30,6 +30,6 @@ The RunAsAccount or Managed Identity needs the following permissions on your aut
 
 ## Description
 
-This script will ensure all Azure VMs in the Update Deployment started by [Turn On VMs](../turnonvms/) script, are turned off after they recieve updates.
+This script will ensure all Azure VMs in the Update Deployment started by [Turn On VMs](../../turnonvms/1.0/) script, are turned off after they recieve updates.
 
-This script reads the name of machines that were started by Update Management via the [Turn On VMs](../turnonvms/) script.
+This script reads the name of machines that were started by Update Management via the [Turn On VMs](../../turnonvms/1.0/) script.

@@ -6,15 +6,30 @@ This repository is used for publicly available artifacts necessary in different 
 
 ## Usage
 
-To be determined.
+Put public facing artifacts here. Currently there are some runbooks meant for consumption in an Azure Automation runbook.
 
 ## Structure
 
-To be determined
+After some discussion, this is the current structure for the repository:
+
+- Repository root
+  - Runbooks (for Azure Automation Runbooks)
+    - RunbookName
+      - [Simver](https://simver.org/) 0.1/0.5/0.9/1.0/1.1/etc.
+        - RunbookName.ps1
+        - Readme.md
+
+Improvements and non-breaking changes on structure will be done continuously after team discussions.
 
 ## Contribute
 
-Future contributions must be done by pull request only. A branch protection rule will be created to ensure no commits directly on main.
+Future contributions must be done by pull request only. A branch protection rule ensures no commits directly on main branch.
 Branching strategy to be used is the [Github flow](https://guides.github.com/introduction/flow/).
 
 This means that you create a short-lived branch, make your changes there, and do a pull request to merge with main branch. The code/content will then be reviewed by Omnia Product Team, and evaluated based on company policy compliance.
+
+Give your branch a name which identifies yourself, and which feature/functionality you are working with. These branches are supposed to live for the duration of your work, and be deleted when handled in a pull request. When you are ready for merging changes into main branch, please create a Pull Request, and assign the relevant approver. All Pull Requests must be approved by at least one approver, and this can not be yourself.
+
+If you see missing structure for your work, please suggest a place for it. We will handle the suggestions in a Pull Request Review.
+
+Thank you!

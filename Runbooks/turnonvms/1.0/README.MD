@@ -4,7 +4,7 @@
 
 - Runbook type: PowerShell
 - Created by: Tor Ivar Asbølmo
-- Status: Work in progress
+- Status: Ready for testing
 
 ## Intended usage
 

@@ -38,7 +38,12 @@ Give your branch a name which identifies yourself, and which feature/functionali
 
 ### Code formatting
 
+Formatting styles are subject to change without notice. The Product Team can update these styles any time based on team experiences or discussions.
+
 We have some style recommendations for contributing code to this repository. Please see the root [vscode settings file](.vscode/settings.json) for these. There is also [recommendations](.vscode/extensions.json) for extensions in VSCode.
 VSCode will interpret these files, and automatically suggest the extensions. It will also analyze code on the fly, and recommend changes based on settings file.
 
 We recommend using Visual Studio Code for contributing to this code repository. Both because it is a nice, lightweight editor, but also because we then can use the same code style with settings.json files.
+
+Please see [this](https://code.visualstudio.com/docs/getstarted/settings) page for more information on using VSCode settings. If you are using a Multi-Root Workspace, you need to configure settings [this](https://code.visualstudio.com/docs/editor/multi-root-workspaces#_settings) way.
+The settings we use can be found [here](.vscode/settings.json).

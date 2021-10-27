@@ -29,24 +29,22 @@
 
 param(
     [string]$SoftwareUpdateConfigurationRunContext,
-    [string]$TagName = "OmniaPT_UpdateStartStop",
-    [string]$TagValue = "Enabled",
-    [string]$ExecutionMode = ""
+    [string]$TagName = 'OmniaPT_UpdateStartStop',
+    [string]$TagValue = 'Enabled',
+    [string]$ExecutionMode = ''
 )
 
-if ($ExecutionMode -eq "DryRun") {
+if ($ExecutionMode -eq 'DryRun') {
     $DryRun = $true
-}
-else {
+} else {
     $DryRun = $false
 }
 
 #region BoilerplateAuthentication
 try {
     $ServicePrincipalConnection = Connect-AzAccount -Identity
-}
-catch {
-    Write-Output "Managed Identity Authentication not enabled. Fallback to AzureRunAsConnection"
+} catch {
+    Write-Output 'Managed Identity Authentication not enabled. Fallback to AzureRunAsConnection'
     $ServicePrincipalConnection = $false
 }
 
@@ -59,9 +57,8 @@ if (!$ServicePrincipalConnection) {
             -TenantId $ServicePrincipalConnection.TenantId `
             -ApplicationId $ServicePrincipalConnection.ApplicationId `
             -CertificateThumbprint $ServicePrincipalConnection.CertificateThumbprint
-    }
-    catch {
-        throw "Could not authenticate with AzureRunAsAccount"
+    } catch {
+        throw 'Could not authenticate with AzureRunAsAccount'
     }
 }
 
@@ -69,13 +66,12 @@ if (!$ServicePrincipalConnection) {
 #endregion BoilerplateAuthentication
 
 #To use the run context, it must be converted from JSON
-$context = ConvertFrom-Json  $SoftwareUpdateConfigurationRunContext
+$context = ConvertFrom-Json $SoftwareUpdateConfigurationRunContext
 
 if ($DryRun) {
-    Write-Output "Execution mode: Dry run. No changes to VM statuses, only reporting."
-}
-else {
-    Write-Output "Execution mode: Regular run. Eligible VMs processed by script."
+    Write-Output 'Execution mode: Dry run. No changes to VM statuses, only reporting.'
+} else {
+    Write-Output 'Execution mode: Regular run. Eligible VMs processed by script.'
 }
 
 #Find the Automation Account and Resource Group name by filtering on all automation accounts and jobs
@@ -91,7 +87,7 @@ foreach ($Automation in $AutomationResource) {
 }
 
 $vmIds = $context.SoftwareUpdateConfigurationSettings.AzureVirtualMachines
-$runId = "PrescriptContext" + $context.SoftwareUpdateConfigurationRunId
+$runId = 'PrescriptContext' + $context.SoftwareUpdateConfigurationRunId
 
 if (!$vmIds) {
     #Workaround: Had to change JSON formatting
@@ -100,16 +96,16 @@ if (!$vmIds) {
     $VmIds = $Settings.AzureVirtualMachines
     #Write-Output "Azure VMs: $VmIds"
     if (!$vmIds) {
-        Write-Output "No Azure VMs found"
+        Write-Output 'No Azure VMs found'
         return
     }
 }
 
 #This is used to store the state of VMs
-New-AzAutomationVariable -ResourceGroupName $ResourceGroup -AutomationAccountName $AutomationAccount -Name $runId -Value "" -Encrypted $false
+New-AzAutomationVariable -ResourceGroupName $ResourceGroup -AutomationAccountName $AutomationAccount -Name $runId -Value '' -Encrypted $false
 
 $updatedMachines = @()
-$startableStates = "stopped" , "stopping", "deallocated", "deallocating"
+$startableStates = 'stopped' , 'stopping', 'deallocated', 'deallocating'
 $jobIDs = New-Object System.Collections.Generic.List[System.Object]
 
 #Parse the list of VMs and start those which are stopped
@@ -118,16 +114,16 @@ $jobIDs = New-Object System.Collections.Generic.List[System.Object]
 $vmIds | ForEach-Object {
     $vmId = $_
 
-    $split = $vmId -split "/";
+    $split = $vmId -split '/';
     $subscriptionId = $split[2];
     $rg = $split[4];
     $name = $split[8];
-    Write-Output ("Subscription Id: " + $subscriptionId)
+    Write-Output ('Subscription Id: ' + $subscriptionId)
     $mute = Select-AzSubscription -Subscription $subscriptionId
 
     $vm = Get-AzVM -ResourceGroupName $rg -Name $name -Status -DefaultProfile $mute
     $vmTags = Get-AzVM -ResourceGroupName $rg -Name $name | Select-Object Tags
-    $state = ($vm.Statuses[1].DisplayStatus -split " ")[1]
+    $state = ($vm.Statuses[1].DisplayStatus -split ' ')[1]
 
     $UpdateStartStopEnabled = $false
     if ($vmTags.Tags[$TagName] -eq $TagValue) {
@@ -139,29 +135,26 @@ $vmIds | ForEach-Object {
         if ($UpdateStartStopEnabled) {
             if ($DryRun) {
                 Write-Output "Dry run. Would have started $name in regular run."
-            }
-            else {
+            } else {
                 Write-Output "Starting '$($name)' ..."
                 #Store the VM we started so we remember to shut it down later
                 $updatedMachines += $vmId
                 $newJob = Start-ThreadJob -ScriptBlock { param($resource, $vmname, $sub) $context = Select-AzSubscription -Subscription $sub; Start-AzVM -ResourceGroupName $resource -Name $vmname -DefaultProfile $context } -ArgumentList $rg, $name, $subscriptionId
                 $jobIDs.Add($newJob.Id)
             }
-        }
-        else {
+        } else {
             Write-Output "'$($name)' not enabled for automatic start. Add tag if this was not intentional."
         }
-    }
-    else {
-        Write-Output ($name + ": no action taken. State: " + $state)
+    } else {
+        Write-Output ($name + ': no action taken. State: ' + $state)
     }
 }
 
-$updatedMachinesCommaSeparated = $updatedMachines -join ","
+$updatedMachinesCommaSeparated = $updatedMachines -join ','
 #Wait until all machines have finished before proceeding to the Update Deployment
 $jobsList = $jobIDs.ToArray()
 if ($jobsList) {
-    Write-Output "Waiting for machines to finish starting..."
+    Write-Output 'Waiting for machines to finish starting...'
     Wait-Job -Id $jobsList
 }
 
@@ -173,6 +166,6 @@ foreach ($id in $jobsList) {
 
 }
 
-Write-output $updatedMachinesCommaSeparated
+Write-Output $updatedMachinesCommaSeparated
 #Store output in the automation variable
 Set-AutomationVariable -Name $runId -Value $updatedMachinesCommaSeparated

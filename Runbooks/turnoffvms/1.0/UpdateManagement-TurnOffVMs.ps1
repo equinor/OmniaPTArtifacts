@@ -23,7 +23,7 @@
 .PARAMETER TagValue
     This is the parameter that determines value of tag which decides eligibility.
 .PARAMETER ExecutionMode
-    This parameter enables you to do a "dry run" of script functionality. When set to anything else than "", VMs are not started, only listed.
+    This parameter enables you to do a "dry run" of script functionality. When set to "DryRun", VMs are not stopped, only listed.
 #>
 
 param(
@@ -35,14 +35,16 @@ param(
 
 if ($ExecutionMode -eq 'DryRun') {
     $DryRun = $true
-} else {
+}
+else {
     $DryRun = $false
 }
 
 #region BoilerplateAuthentication
 try {
     $ServicePrincipalConnection = Connect-AzAccount -Identity
-} catch {
+}
+catch {
     Write-Output 'Managed Identity Authentication not enabled. Fallback to AzureRunAsConnection'
     $ServicePrincipalConnection = $false
 }
@@ -56,7 +58,8 @@ if (!$ServicePrincipalConnection) {
             -TenantId $ServicePrincipalConnection.TenantId `
             -ApplicationId $ServicePrincipalConnection.ApplicationId `
             -CertificateThumbprint $ServicePrincipalConnection.CertificateThumbprint
-    } catch {
+    }
+    catch {
         throw 'Could not authenticate with AzureRunAsAccount'
     }
 }
@@ -70,7 +73,8 @@ $runId = 'PrescriptContext' + $context.SoftwareUpdateConfigurationRunId
 
 if ($DryRun) {
     Write-Output 'Execution mode: Dry run. No changes to VM statuses, only reporting.'
-} else {
+}
+else {
     Write-Output 'Execution mode: Regular run. Eligible VMs processed by script.'
 }
 
@@ -126,15 +130,18 @@ $vmIds | ForEach-Object {
         if ($UpdateStartStopEnabled) {
             if ($DryRun) {
                 Write-Output "Dry run. Would have stopped $name in regular run."
-            } else {
+            }
+            else {
                 Write-Output "Stopping '$($name)' ..."
                 $newJob = Start-ThreadJob -ScriptBlock { param($resource, $vmname, $sub) $context = Select-AzSubscription -Subscription $sub; Stop-AzVM -ResourceGroupName $resource -Name $vmname -Force -DefaultProfile $context } -ArgumentList $rg, $name, $subscriptionId
                 $jobIDs.Add($newJob.Id)
             }
-        } else {
+        }
+        else {
             Write-Output "'$($name)' not enabled for automatic stop. Add tag if this was not intentional."
         }
-    } else {
+    }
+    else {
         Write-Output ($name + ': already stopped. State: ' + $state)
     }
 }

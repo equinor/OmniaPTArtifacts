@@ -30,15 +30,6 @@ do {
     #-----L O G I N - A U T H E N T I C A T I O N-----
     $connectionName = 'AzureRunAsConnection'
     try {
-        # Get the connection "AzureRunAsConnection "
-        #$servicePrincipalConnection=Get-AutomationConnection -Name $connectionName
-
-        #Add-AzAccount `
-        #    -ServicePrincipal `
-        #    -TenantId $servicePrincipalConnection.TenantId `
-        #    -ApplicationId $servicePrincipalConnection.ApplicationId `
-        #    -CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint
-
         Connect-AzAccount -Identity
 
         $Context = Get-AzContext

@@ -63,15 +63,6 @@ if ($WebHookData) {
         Write-Output 'Logging into Azure subscription using Az cmdlets...'
         $connectionName = 'AzureRunAsConnection'
         try {
-            # Get the connection "AzureRunAsConnection "
-            #$servicePrincipalConnection=Get-AutomationConnection -Name $connectionName
-
-            #Add-AzAccount `
-            #    -ServicePrincipal `
-            #    -TenantId $servicePrincipalConnection.TenantId `
-            #    -ApplicationId $servicePrincipalConnection.ApplicationId `
-            #    -CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint
-
             Connect-AzAccount -Identity
 
             $Context = Get-AzContext

@@ -8,6 +8,7 @@
 Version History
 v1.0 - Initial Release
 v2.0 - Refactored Az modules
+v2.1 - Added possibility for disabling schedules after deploy
 #>
 
 
@@ -17,7 +18,6 @@ Write-Output 'Bootstrap main script execution started...'
 
 #---------Inputs variables for NewRunAsAccountCertKeyVault.ps1 child bootstrap script--------------
 $automationAccountName = Get-AutomationVariable -Name 'Internal_AutomationAccountName'
-$SubscriptionId = Get-AutomationVariable -Name 'Internal_AzureSubscriptionId'
 $aroResourceGroupName = Get-AutomationVariable -Name 'Internal_ResourceGroupName'
 
 $startScheduleDisabled = Get-AutomationVariable -Name 'Internal_StartScheduleDisabled'
@@ -90,7 +90,7 @@ try {
         #Webhook creation for variable Internal_AutoSnooze_WebhookUri
         $checkWebhook = Get-AzAutomationWebhook -Name $webhookNameforAutoStopVM -AutomationAccountName $AutomationAccountName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkWebhook -eq $null) {
+        if ($null -eq $checkWebhook) {
             Write-Output "Executing Step-1 : Create the webhook for $($runbookNameforAutoStopVM)..."
 
             $ExpiryTime = (Get-Date).AddDays(730)
@@ -122,7 +122,7 @@ try {
         #Webhook creation for variable Internal_AutoSnooze_ARM_WebhookUri
         $checkWebhook = Get-AzAutomationWebhook -Name $webhookNameforAutoStopVMARM -AutomationAccountName $AutomationAccountName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkWebhook -eq $null) {
+        if ($null -eq $checkWebhook) {
             Write-Output "Executing Step-1 : Create the webhook for $($runbookNameforAutoStopVMARM)..."
 
             $ExpiryTime = (Get-Date).AddDays(730)
@@ -169,7 +169,7 @@ try {
 
         $checkMegaSchedule = Get-AzAutomationSchedule -Name $scheduleNameforCreateAlert -AutomationAccountName $automationAccountName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkMegaSchedule -eq $null) {
+        if ($null -eq $checkMegaSchedule) {
             Write-Output 'Executing Step-2 : Create schedule for AutoStop_CreateAlert_Parent runbook ...'
 
             #-----Configure the Start & End Time----
@@ -229,7 +229,7 @@ try {
         #Stops every friday 6PM
         $StopVmUTCTime = (Get-Date '01:00:00').AddDays(1).ToUniversalTime()
 
-        if ($checkSeqSnoozeStart -eq $null) {
+        if ($null -eq $checkSeqSnoozeStart) {
             Write-Output 'Executing Step-3 : Create start schedule for SequencedStartStop_Parent runbook ...'
 
             #---Create the schedule at the Automation Account level---
@@ -248,7 +248,7 @@ try {
             Write-Output "Successfully Registered the Schedule in the Runbook ($($runbookNameforARMVMOptimization))..."
         }
 
-        if ($checkSeqSnoozeStop -eq $null) {
+        if ($null -eq $checkSeqSnoozeStop) {
             Write-Output 'Executing Step-3 : Create stop schedule for SequencedStartStop_Parent runbook ...'
 
             #---Create the schedule at the Automation Account level---
@@ -267,7 +267,7 @@ try {
             Write-Output "Successfully Registered the Schedule in the Runbook ($($runbookNameforARMVMOptimization))..."
         }
 
-        if ($checkSeqSnoozeStart -ne $null -and $checkSeqSnoozeStop -ne $null) {
+        if ($null -ne $checkSeqSnoozeStart -and $null -ne $checkSeqSnoozeStop) {
             Write-Output 'Schedule already available. Ignoring Step-3...'
         }
         Write-Output 'Completed Step-3 ...'
@@ -317,7 +317,7 @@ try {
 
         $checkScheduleBootstrap = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'startBootstrap' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkScheduleBootstrap -ne $null) {
+        if ($null -ne $checkScheduleBootstrap) {
 
             Write-Output 'Removing Bootstrap Schedule...'
 

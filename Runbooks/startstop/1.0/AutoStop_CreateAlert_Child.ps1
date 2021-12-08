@@ -127,7 +127,7 @@ try {
         if ($AlertAction -eq 'Disable') {
             $ExVMAlerts = Get-AzAlertRule -ResourceGroup $VMObject.ResourceGroupName -DetailedOutput -ErrorAction SilentlyContinue
 
-            if ($ExVMAlerts -ne $null) {
+            if ($null -ne $ExVMAlerts) {
                 Write-Output 'Checking for any previous alert(s)...'
                 #Alerts exists so disable alert
                 foreach ($Alert in $ExVMAlerts) {
@@ -161,7 +161,7 @@ try {
             $VMAlerts = Get-AzAlertRule -ResourceGroupName $ResourceGroupName -DetailedOutput -ErrorAction SilentlyContinue
 
             #Check if alerts exists and take action
-            if ($VMAlerts -ne $null) {
+            if ($null -ne $VMAlerts) {
                 Write-Output 'Checking for any previous alert(s)...'
                 #Alerts exists so delete and re-create the new alert
                 foreach ($Alert in $VMAlerts) {
@@ -176,7 +176,7 @@ try {
                             #Start-Sleep 10
                             $GetAlert = Get-AzAlertRule -ResourceGroupName $ResourceGroupName -Name $Alert.Name -DetailedOutput -ErrorAction SilentlyContinue
                         }
-                        while ($GetAlert -ne $null)
+                        while ($null -ne $GetAlert)
 
                         Write-Output 'Generating a new alert with unique name...'
                         #Now generate new unique alert name
@@ -221,7 +221,7 @@ try {
         if ($AlertAction -eq 'Disable') {
             $ExVMAlerts = Get-AzMetricAlertRuleV2 -ResourceGroupName $VMObject.ResourceGroupName -ErrorAction SilentlyContinue
 
-            if ($ExVMAlerts -ne $null) {
+            if ($null -ne $ExVMAlerts) {
                 Write-Output 'Checking for any previous alert(s)...'
                 #Alerts exists so disable alert
                 foreach ($Alert in $ExVMAlerts) {
@@ -239,7 +239,7 @@ try {
             $VMAlerts = Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
 
             #Check if alerts exists and take action
-            if ($VMAlerts -ne $null) {
+            if ($null -ne $VMAlerts) {
                 Write-Output 'Checking for any previous alert(s)...'
                 #Alerts exists so delete and re-create the new alert
                 foreach ($Alert in $VMAlerts) {
@@ -254,7 +254,7 @@ try {
                             #Start-Sleep 10
                             $GetAlert = Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -Name $Alert.Name -ErrorAction SilentlyContinue
                         }
-                        while ($GetAlert -ne $null)
+                        while ($null -ne $GetAlert)
 
                         Write-Output 'Generating a new alert with unique name...'
                         #Now generate new unique alert name
@@ -281,7 +281,7 @@ try {
 
             $actionGroup = Get-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-            if ($actionGroup -eq $null) {
+            if ($null -eq $actionGroup) {
                 #1a Create the webhook receiver
                 $webhookReceiverName = 'AutoStop_VM_WebhookReceiver_ARM'
                 $webhookReceiver = New-AzActionGroupReceiver -Name $webhookReceiverName -WebhookReceiver -ServiceUri $webhookARMUri

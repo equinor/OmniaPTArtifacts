@@ -86,11 +86,11 @@ try {
     $AzureVMListTemp = $null
     $AzureVMList = @()
     ##Getting VM Details based on RG List or Subscription
-    if (($VMRGList -ne $null) -and ($VMRGList -ne '*')) {
+    if (($null -ne $VMRGList) -and ($VMRGList -ne '*')) {
         foreach ($Resource in $VMRGList) {
             Write-Output "Validating the resource group name ($($Resource.Trim()))"
             $checkRGname = Get-AzResourceGroup $Resource.Trim() -ev notPresent -ea 0
-            if ($checkRGname -eq $null) {
+            if ($null -eq $checkRGname) {
                 Write-Warning "$($Resource) is not a valid Resource Group Name. Please verify your input."
                 Write-Output "$($Resource) is not a valid Resource Group Name. Please verify your input."
             } else {

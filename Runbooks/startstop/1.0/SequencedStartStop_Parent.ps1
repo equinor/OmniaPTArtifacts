@@ -51,7 +51,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
 
                 $CaseSensitiveTagName = $FilterTagVMs.Tags.Keys | Where-Object -FilterScript { $_ -eq $TagName }
 
-                if ($CaseSensitiveTagName -ne $null) {
+                if ($null -ne $CaseSensitiveTagName) {
                     if ($FilterTagVMs.Tags[$CaseSensitiveTagName] -eq $seq) {
                         $AzureVMListTemp += $FilterTagVMs | Select-Object Name, ResourceGroupName
                     }
@@ -62,7 +62,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
             ##Remove Excluded VMs
             $ActualAzureVMList = @()
             $ExAzureVMList = @()
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($filtervm in $ExcludeList) {
                     $currentVM = $AllVMs | Where-Object Name -Like $filtervm.Trim() -ErrorAction SilentlyContinue
 
@@ -72,7 +72,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
                 }
             }
 
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($VM in $AzureVMList) {
                     ##Checking Vm in excluded list
                     if ($ExAzureVMList -notcontains ($($VM.Name))) {
@@ -128,7 +128,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
                 while ($RetryFlag)
             }
 
-            if ($ActualVMListOutput -ne $null) {
+            if ($null -ne $ActualVMListOutput) {
                 Write-Output "~Attempted the $($Action) action on the following VMs in sequence $($seq): $($ActualVMListOutput)"
             }
 
@@ -177,7 +177,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
 
                 $CaseSensitiveTagName = $FilterTagVMs.Tags.Keys | Where-Object -FilterScript { $_ -eq $TagName }
 
-                if ($CaseSensitiveTagName -ne $null) {
+                if ($null -ne $CaseSensitiveTagName) {
                     if ($FilterTagVMs.Tags[$CaseSensitiveTagName] -eq $seq) {
                         $AzureVMListTemp += $FilterTagVMs | Select-Object Name, ResourceGroupName
                     }
@@ -188,7 +188,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
             ##Remove Excluded VMs
             $ActualAzureVMList = @()
             $ExAzureVMList = @()
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($filtervm in $ExcludeList) {
                     $currentVM = $AllVMs | Where-Object Name -Like $filtervm.Trim() -ErrorAction SilentlyContinue
 
@@ -198,7 +198,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
                 }
             }
 
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($VM in $AzureVMList) {
                     ##Checking Vm in excluded list
                     if ($ExAzureVMList -notcontains ($($VM.Name))) {
@@ -236,7 +236,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
 
                 $CaseSensitiveTagName = $FilterTagVMs.Tags.Keys | Where-Object -FilterScript { $_ -eq $TagName }
 
-                if ($CaseSensitiveTagName -ne $null) {
+                if ($null -ne $CaseSensitiveTagName) {
                     if ($FilterTagVMs.Tags[$CaseSensitiveTagName] -eq $seq) {
                         $AzureVMListTemp += $FilterTagVMs | Select-Object Name, ResourceGroupName
                     }
@@ -248,7 +248,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
             $ActualAzureVMList = @()
             $ExAzureVMList = @()
 
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($filtervm in $ExcludeList) {
                     $currentVM = $AllVMs | Where-Object Name -Like $filtervm.Trim() -ErrorAction SilentlyContinue
 
@@ -258,7 +258,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
                 }
             }
 
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($VM in $AzureVMList) {
                     ##Checking Vm in excluded list
                     if ($ExAzureVMList -notcontains ($($VM.Name))) {
@@ -312,7 +312,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
                 while ($RetryFlag)
             }
 
-            if ($ActualVMListOutput -ne $null) {
+            if ($null -ne $ActualVMListOutput) {
                 Write-Output "~Attempted the $($Action) action on the following VMs in sequence $($seq): $($ActualVMListOutput)"
             }
 
@@ -363,7 +363,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
 
                 $CaseSensitiveTagName = $FilterTagVMs.Tags.Keys | Where-Object -FilterScript { $_ -eq $TagName }
 
-                if ($CaseSensitiveTagName -ne $null) {
+                if ($null -ne $CaseSensitiveTagName) {
                     if ($FilterTagVMs.Tags[$CaseSensitiveTagName] -eq $seq) {
                         $AzureVMListTemp += $FilterTagVMs | Select-Object Name, ResourceGroupName
                     }
@@ -374,7 +374,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
             ##Remove Excluded VMs
             $ActualAzureVMList = @()
             $ExAzureVMList = @()
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($filtervm in $ExcludeList) {
                     $currentVM = $AllVMs | Where-Object Name -Like $filtervm.Trim() -ErrorAction SilentlyContinue
 
@@ -384,7 +384,7 @@ function PerformActionOnSequencedTaggedVMRGs($Sequences, [string]$Action, $TagNa
                 }
             }
 
-            if (($ExcludeList -ne $null) -and ($ExcludeList -ne 'none')) {
+            if (($null -ne $ExcludeList) -and ($ExcludeList -ne 'none')) {
                 foreach ($VM in $AzureVMList) {
                     ##Checking Vm in excluded list
                     if ($ExAzureVMList -notcontains ($($VM.Name))) {
@@ -423,7 +423,7 @@ function PerformActionOnSequencedTaggedVMList($Sequences, [string]$Action, $TagN
 
                 $CaseSensitiveTagName = $FilterTagVMs.Tags.Keys | Where-Object -FilterScript { $_ -eq $TagName }
 
-                if ($CaseSensitiveTagName -ne $null) {
+                if ($null -ne $CaseSensitiveTagName) {
                     if ($FilterTagVMs.Tags[$CaseSensitiveTagName] -eq $seq) {
                         $AzureVMListTemp += $FilterTagVMs | Select-Object Name, ResourceGroupName
                     }
@@ -474,7 +474,7 @@ function PerformActionOnSequencedTaggedVMList($Sequences, [string]$Action, $TagN
                 while ($RetryFlag)
             }
 
-            if ($ActualVMListOutput -ne $null) {
+            if ($null -ne $ActualVMListOutput) {
                 Write-Output "~Attempted the $($Action) action on the following VMs in sequence $($seq): $($ActualVMListOutput)"
             }
 
@@ -528,7 +528,7 @@ function PerformActionOnSequencedTaggedVMList($Sequences, [string]$Action, $TagN
 
                 $CaseSensitiveTagName = $FilterTagVMs.Tags.Keys | Where-Object -FilterScript { $_ -eq $TagName }
 
-                if ($CaseSensitiveTagName -ne $null) {
+                if ($null -ne $CaseSensitiveTagName) {
                     if ($FilterTagVMs.Tags[$CaseSensitiveTagName] -eq $seq) {
                         $AzureVMListTemp += $FilterTagVMs | Select-Object Name, ResourceGroupName
                     }
@@ -565,12 +565,12 @@ function CheckValidAzureVM ($FilterVMList) {
     foreach ($filtervm in $FilterVMList) {
         $VMARMTemp = $VMListARM | Where-Object name -Like $filtervm.Trim()
 
-        if ($VMARMTemp -eq $null) {
+        if ($null -eq $VMARMTemp) {
             $invalidvm = $invalidvm + $filtervm
         }
     }
 
-    if ($invalidvm -ne $null) {
+    if ($null -ne $invalidvm) {
         Write-Output "Runbook Execution Stopped! Invalid VM Name(s) in the list: $($invalidvm) "
         Write-Warning "Runbook Execution Stopped! Invalid VM Name(s) in the list: $($invalidvm) "
         exit
@@ -580,7 +580,7 @@ function CheckValidAzureVM ($FilterVMList) {
         foreach ($vm in $FilterVMList) {
             $NewVM = $VMListARM | Where-Object name -Like $vm
 
-            if ($NewVM -ne $null) {
+            if ($null -ne $NewVM) {
                 foreach ($nvm in $NewVM) {
                     $ExAzureVMList += @{Name = $nvm.Name; ResourceGroupName = $nvm.ResourceGroupName; Type = 'ResourceManager' }
                 }
@@ -709,12 +709,12 @@ try {
     $stopSequences = $stopSequences | Sort-Object -Unique
 
     if ($Action -eq 'start') {
-        if ($AzVMList -ne $null) {
+        if ($null -ne $AzVMList) {
             $AzureVMList = CheckValidAzureVM -FilterVMList $AzVMList
 
             PerformActionOnSequencedTaggedVMList -Sequences $startSequences -Action $Action -TagName $startTagValue -AzVMList $AzVMList
         } else {
-            if (($VMRGList -ne $null) -and ($VMRGList -ne '*')) {
+            if (($null -ne $VMRGList) -and ($VMRGList -ne '*')) {
                 PerformActionOnSequencedTaggedVMRGs -Sequences $startSequences -Action $Action -TagName $startTagValue -VMRGList $VMRGList -ExcludeList $VMfilterList
             } else {
                 PerformActionOnSequencedTaggedVMAll -Sequences $startSequences -Action $Action -TagName $startTagValue -ExcludeList $VMfilterList
@@ -723,12 +723,12 @@ try {
     }
 
     if ($Action -eq 'stop') {
-        if ($AzVMList -ne $null) {
+        if ($null -ne $AzVMList) {
             $AzureVMList = CheckValidAzureVM -FilterVMList $AzVMList
 
             PerformActionOnSequencedTaggedVMList -Sequences $stopSequences -Action $Action -TagName $stopTagValue -AzVMList $AzVMList
         } else {
-            if (($VMRGList -ne $null) -and ($VMRGList -ne '*')) {
+            if (($null -ne $VMRGList) -and ($VMRGList -ne '*')) {
                 PerformActionOnSequencedTaggedVMRGs -Sequences $stopSequences -Action $Action -TagName $stopTagValue -VMRGList $VMRGList -ExcludeList $VMfilterList
             } else {
                 PerformActionOnSequencedTaggedVMAll -Sequences $stopSequences -Action $Action -TagName $stopTagValue -ExcludeList $VMfilterList

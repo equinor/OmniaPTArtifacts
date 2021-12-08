@@ -105,7 +105,7 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
         if ($EnableClassicVMs) {
             $VMCSTemp = $VMListCS | Where-Object name -Like $filtervm.Trim()
 
-            if ($VMCSTemp -eq $null) {
+            if ($null -eq $VMCSTemp) {
                 $ISexists = $false
             } else {
                 $ISexists = $true
@@ -114,14 +114,14 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
 
         $VMARMTemp = $VMListARM | Where-Object name -Like $filtervm.Trim()
 
-        if ($VMARMTemp -ne $null) {
+        if ($null -ne $VMARMTemp) {
             $ISexists = $true
         } elseif ($ISexists -eq $false) {
             $invalidvm = $invalidvm + $filtervm
         }
     }
 
-    if ($invalidvm -ne $null) {
+    if ($null -ne $invalidvm) {
         Write-Output "Runbook Execution Stopped! Invalid VM Name(s) in the list: $($invalidvm) "
         Write-Warning "Runbook Execution Stopped! Invalid VM Name(s) in the list: $($invalidvm) "
         exit
@@ -131,7 +131,7 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
         foreach ($vm in $FilterVMList) {
             $NewVM = $VMListARM | Where-Object name -Like $vm
 
-            if ($NewVM -ne $null) {
+            if ($null -ne $NewVM) {
                 foreach ($nvm in $NewVM) {
                     $ExAzureVMList += @{Name = $nvm.Name; ResourceGroupName = $nvm.ResourceGroupName; Type = 'ResourceManager' }
                 }
@@ -140,7 +140,7 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
             if ($EnableClassicVMs) {
                 $NewVm = $VMListCS | Where-Object name -Like $vm
 
-                if ($NewVM -ne $null) {
+                if ($null -ne $NewVM) {
                     foreach ($nvm in $NewVM) {
                         $ExAzureVMList += @{Name = $nvm.Name; ResourceGroupName = $nvm.ResourceGroupName; Type = 'Classic' }
                     }
@@ -241,7 +241,7 @@ try {
     $AzureVMListTemp = $null
     $AzureVMList = @()
 
-    if ($AzVMList -ne $null) {
+    if ($null -ne $AzVMList) {
         ##Action to be taken based on VM List and not on Resource group.
         ##Validating the VM List.
         Write-Output 'VM List is given to take action (Exclude list will be ignored)...'
@@ -249,11 +249,11 @@ try {
     } else {
 
         ##Getting VM Details based on RG List or Subscription
-        if (($VMRGList -ne $null) -and ($VMRGList -ne '*')) {
+        if (($null -ne $VMRGList) -and ($VMRGList -ne '*')) {
             foreach ($Resource in $VMRGList) {
                 Write-Output "Validating the resource group name ($($Resource.Trim()))"
                 $checkRGname = Get-AzResourceGroup -Name $Resource.Trim() -ev notPresent -ea 0
-                if ($checkRGname -eq $null) {
+                if ($null -eq $checkRGname) {
                     Write-Warning "$($Resource) is not a valid ResourceGroup Name. Please verify your input!"
                     Write-Output "$($Resource) is not a valid ResourceGroup Name. Please verify your input!"
                     exit
@@ -316,11 +316,11 @@ try {
 
     $ActualAzureVMList = @()
 
-    if ($AzVMList -ne $null) {
+    if ($null -ne $AzVMList) {
         $ActualAzureVMList = $AzureVMList
     }
     #Check if exclude vm list has wildcard
-    elseif (($VMfilterList -ne $null) -and ($VMfilterList -ne 'none')) {
+    elseif (($null -ne $VMfilterList) -and ($VMfilterList -ne 'none')) {
         foreach ($VM in $AzureVMList) {
             ##Checking Vm in excluded list
             if ($ExAzureVMList.Name -notcontains ($($VM.Name))) {
@@ -344,7 +344,7 @@ try {
         $AzureVMListClassic = $ActualAzureVMList | Where-Object { $_.Type -eq 'Classic' }
 
         # process the ARM VM's
-        if ($AzureVMListARM -ne $null) {
+        if ($null -ne $AzureVMListARM) {
             foreach ($VM in $AzureVMListARM) {
                 $ActualVMListOutput = $ActualVMListOutput + $VM.Name + ' '
                 ScheduleSnoozeAction -VMObject $VM -Action $Action
@@ -355,7 +355,7 @@ try {
         }
 
         # process the Classic VM's
-        if (($AzureVMListClassic -ne $null) -and ($enableClassicVMs)) {
+        if (($null -ne $AzureVMListClassic) -and ($enableClassicVMs)) {
 
             #Get the classic VM asset using azure resource graph to get the cloudservice names
             $AllClassicVMs = Search-AzGraph -Query "Resources | where type =~ 'Microsoft.ClassicCompute/virtualMachines'"

@@ -13,7 +13,7 @@ param (
     [object]$WebhookData
 )
 
-if ($WebhookData -ne $null) {
+if ($null -ne $WebhookData) {
     # Collect properties of WebhookData.
     $WebhookName = $WebhookData.WebhookName
     $WebhookBody = $WebhookData.RequestBody

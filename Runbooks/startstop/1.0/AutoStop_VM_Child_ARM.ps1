@@ -77,7 +77,7 @@ if ($WebHookData) {
 
                 $Status = Stop-AzVM -Name $context.resourceName -ResourceGroupName $context.resourceGroupName -Force
 
-                if ($Status -eq $null) {
+                if ($null -eq $Status) {
                     Write-Output "Error occurred while stopping the Virtual Machine $($context.resourceName) hence retrying..."
 
                     if ($Attempt -gt $RetryCount) {

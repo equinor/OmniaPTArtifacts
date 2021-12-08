@@ -34,7 +34,7 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
         if ($EnableClassicVMs) {
             $VMCSTemp = $VMListCS | Where-Object name -Like $filtervm.Trim()
 
-            if ($VMCSTemp -eq $null) {
+            if ($null -eq $VMCSTemp) {
                 $ISexists = $false
             } else {
                 $ISexists = $true
@@ -43,14 +43,14 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
 
         $VMARMTemp = $VMListARM | Where-Object name -Like $filtervm.Trim()
 
-        if ($VMARMTemp -ne $null) {
+        if ($null -ne $VMARMTemp) {
             $ISexists = $true
         } elseif ($ISexists -eq $false) {
             $invalidvm = $invalidvm + $filtervm
         }
     }
 
-    if ($invalidvm -ne $null) {
+    if ($null -ne $invalidvm) {
         Write-Output "Runbook Execution Stopped! Invalid VM Name(s) in the list: $($invalidvm) "
         Write-Warning "Runbook Execution Stopped! Invalid VM Name(s) in the list: $($invalidvm) "
         exit
@@ -60,7 +60,7 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
         foreach ($vm in $FilterVMList) {
             $NewVM = $VMListARM | Where-Object name -Like $vm
 
-            if ($NewVM -ne $null) {
+            if ($null -ne $NewVM) {
                 foreach ($nvm in $NewVM) {
                     $ExAzureVMList += @{Name = $nvm.Name; Location = $nvm.Location; ResourceGroupName = $nvm.ResourceGroupName; Type = 'ResourceManager' }
                 }
@@ -69,7 +69,7 @@ function CheckValidAzureVM ($FilterVMList, $EnableClassicVMs) {
             if ($EnableClassicVMs) {
                 $NewVm = $VMListCS | Where-Object name -Like $vm
 
-                if ($NewVM -ne $null) {
+                if ($null -ne $NewVM) {
                     foreach ($nvm in $NewVM) {
                         $ExAzureVMList += @{Name = $nvm.Name; Location = $nvm.Location; ResourceGroupName = $nvm.ResourceGroupName; Type = 'Classic' }
                     }
@@ -152,7 +152,7 @@ try {
         $ExAzureVMList = CheckValidAzureVM -FilterVMList $VMfilterList -EnableClassicVMs $enableClassicVMs
     }
 
-    if ($ExAzureVMList -ne $null -and $WhatIf -eq $false) {
+    if ($null -ne $ExAzureVMList -and $WhatIf -eq $false) {
         foreach ($VM in $ExAzureVMList) {
             try {
                 Write-Output "Disabling the alert rules for VM : $($VM.Name)"
@@ -163,7 +163,7 @@ try {
                 Write-Output $_.Exception
             }
         }
-    } elseif ($ExAzureVMList -ne $null -and $WhatIf -eq $true) {
+    } elseif ($null -ne $ExAzureVMList -and $WhatIf -eq $true) {
         Write-Output 'WhatIf parameter is set to True...'
         Write-Output "What if: Performing the alert rules disable for the Exclude VM's..."
         Write-Output $ExcludeVMNames
@@ -173,19 +173,19 @@ try {
     $AzureVMList = @()
 
 
-    if ($VMAlertList -ne $null) {
+    if ($null -ne $VMAlertList) {
         ##Alerts are created based on VM List not on Resource group.
         ##Validating the VM List.
         Write-Output 'VM List is given to create Alerts..'
         $AzureVMList = CheckValidAzureVM -FilterVMList $VMAlertList -EnableClassicVMs $enableClassicVMs
     } else {
         ##Getting VM Details based on RG List or Subscription
-        if (($VMRGList -ne $null) -and ($VMRGList -ne '*')) {
+        if (($null -ne $VMRGList) -and ($VMRGList -ne '*')) {
             Write-Output 'Resource Group List is given to create Alerts..'
             foreach ($Resource in $VMRGList) {
                 Write-Output "Validating the resource group name ($($Resource.Trim()))"
                 $checkRGname = Get-AzResourceGroup $Resource.Trim() -ev notPresent -ea 0
-                if ($checkRGname -eq $null) {
+                if ($null -eq $checkRGname) {
                     Write-Output "$($Resource) is not a valid Resource Group Name. Please verify your input."
                     Write-Warning "$($Resource) is not a valid Resource Group Name. Please verify your input."
                     exit
@@ -237,7 +237,7 @@ try {
     }
 
     $ActualAzureVMList = @()
-    if ($VMfilterList -ne $null) {
+    if ($null -ne $VMfilterList) {
         foreach ($VM in $AzureVMList) {
             ##Checking Vm in excluded list
             if ($ExAzureVMList.Name -notcontains ($($VM.Name))) {

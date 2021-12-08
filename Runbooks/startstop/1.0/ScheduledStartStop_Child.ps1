@@ -11,7 +11,9 @@ v1.0   - Initial Release
 param(
     [string]$VMName = $(throw 'Value for VMName is missing'),
     [String]$Action = $(throw 'Value for Action is missing'),
-    [String]$ResourceGroupName = $(throw 'Value for ResourceGroupName is missing')
+    [String]$ResourceGroupName = $(throw 'Value for ResourceGroupName is missing'),
+    [string]$ExcludedTagName = 'OmniaPT_AutoStartStopDisabled',
+    [String]$ExcludedTagValue = 'True'
 )
 
 [string] $FailureMessage = 'Failed to execute the command'
@@ -37,12 +39,17 @@ do {
 
         Write-Output "VM action is : $($Action)"
 
-        if ($Action.Trim().ToLower() -eq 'stop') {
+        $vmTags = Get-AzVM -ResourceGroupName $ResourceGroupName -Name $VMName | Select-Object Tags
+
+        if ($vmTags.Tags[$ExcludedTagName] -eq $ExcludedTagValue) {
+            Write-Output "Virtual Machine $($VMName) excluded by tag."
+            $RetryFlag = $false
+        } elseif ($Action.Trim().ToLower() -eq 'stop') {
             Write-Output "Stopping the Virtual Machine : $($VMName)"
 
             $Status = Stop-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName -Force
 
-            if ($Status -eq $null) {
+            if ($null -eq $Status) {
                 Write-Output "Error occurred while stopping the Virtual Machine $($VMName) hence retrying..."
 
                 if ($Attempt -gt $RetryCount) {
@@ -68,7 +75,7 @@ do {
 
             $Status = Start-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 
-            if ($Status -eq $null) {
+            if ($null -eq $Status) {
                 Write-Output "Error occurred while starting the Virtual Machine $($VMName) hence retrying..."
 
                 if ($Attempt -gt $RetryCount) {

@@ -8,6 +8,7 @@
 Version History
 v1.0 - Initial Release
 v2.0 - Refactored Az modules
+v2.1 - Added possibility for disabling schedules after deploy
 #>
 
 
@@ -17,8 +18,10 @@ Write-Output 'Bootstrap main script execution started...'
 
 #---------Inputs variables for NewRunAsAccountCertKeyVault.ps1 child bootstrap script--------------
 $automationAccountName = Get-AutomationVariable -Name 'Internal_AutomationAccountName'
-$SubscriptionId = Get-AutomationVariable -Name 'Internal_AzureSubscriptionId'
 $aroResourceGroupName = Get-AutomationVariable -Name 'Internal_ResourceGroupName'
+
+$startScheduleDisabled = Get-AutomationVariable -Name 'Internal_StartScheduleDisabled'
+$stopScheduleDisabled = Get-AutomationVariable -Name 'Internal_StopScheduleDisabled'
 
 [string] $FailureMessage = 'Failed to execute the command'
 [int] $RetryCount = 3
@@ -30,15 +33,6 @@ do {
     #-----L O G I N - A U T H E N T I C A T I O N-----
     $connectionName = 'AzureRunAsConnection'
     try {
-        # Get the connection "AzureRunAsConnection "
-        #$servicePrincipalConnection=Get-AutomationConnection -Name $connectionName
-
-        #Add-AzAccount `
-        #    -ServicePrincipal `
-        #    -TenantId $servicePrincipalConnection.TenantId `
-        #    -ApplicationId $servicePrincipalConnection.ApplicationId `
-        #    -CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint
-
         Connect-AzAccount -Identity
 
         $Context = Get-AzContext
@@ -96,7 +90,7 @@ try {
         #Webhook creation for variable Internal_AutoSnooze_WebhookUri
         $checkWebhook = Get-AzAutomationWebhook -Name $webhookNameforAutoStopVM -AutomationAccountName $AutomationAccountName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkWebhook -eq $null) {
+        if ($null -eq $checkWebhook) {
             Write-Output "Executing Step-1 : Create the webhook for $($runbookNameforAutoStopVM)..."
 
             $ExpiryTime = (Get-Date).AddDays(730)
@@ -128,7 +122,7 @@ try {
         #Webhook creation for variable Internal_AutoSnooze_ARM_WebhookUri
         $checkWebhook = Get-AzAutomationWebhook -Name $webhookNameforAutoStopVMARM -AutomationAccountName $AutomationAccountName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkWebhook -eq $null) {
+        if ($null -eq $checkWebhook) {
             Write-Output "Executing Step-1 : Create the webhook for $($runbookNameforAutoStopVMARM)..."
 
             $ExpiryTime = (Get-Date).AddDays(730)
@@ -175,7 +169,7 @@ try {
 
         $checkMegaSchedule = Get-AzAutomationSchedule -Name $scheduleNameforCreateAlert -AutomationAccountName $automationAccountName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkMegaSchedule -eq $null) {
+        if ($null -eq $checkMegaSchedule) {
             Write-Output 'Executing Step-2 : Create schedule for AutoStop_CreateAlert_Parent runbook ...'
 
             #-----Configure the Start & End Time----
@@ -235,7 +229,7 @@ try {
         #Stops every friday 6PM
         $StopVmUTCTime = (Get-Date '01:00:00').AddDays(1).ToUniversalTime()
 
-        if ($checkSeqSnoozeStart -eq $null) {
+        if ($null -eq $checkSeqSnoozeStart) {
             Write-Output 'Executing Step-3 : Create start schedule for SequencedStartStop_Parent runbook ...'
 
             #---Create the schedule at the Automation Account level---
@@ -254,7 +248,7 @@ try {
             Write-Output "Successfully Registered the Schedule in the Runbook ($($runbookNameforARMVMOptimization))..."
         }
 
-        if ($checkSeqSnoozeStop -eq $null) {
+        if ($null -eq $checkSeqSnoozeStop) {
             Write-Output 'Executing Step-3 : Create stop schedule for SequencedStartStop_Parent runbook ...'
 
             #---Create the schedule at the Automation Account level---
@@ -273,7 +267,7 @@ try {
             Write-Output "Successfully Registered the Schedule in the Runbook ($($runbookNameforARMVMOptimization))..."
         }
 
-        if ($checkSeqSnoozeStart -ne $null -and $checkSeqSnoozeStop -ne $null) {
+        if ($null -ne $checkSeqSnoozeStart -and $null -ne $checkSeqSnoozeStop) {
             Write-Output 'Schedule already available. Ignoring Step-3...'
         }
         Write-Output 'Completed Step-3 ...'
@@ -288,14 +282,42 @@ try {
 
     #~~~~~~~~~~~~~~~~~~~~STEP 3 execution ends~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    #~~~~~~~~~~~~~~~~~~~~STEP 4 execution starts~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    try {
+        if ($startScheduleDisabled -eq 'true') {
+            Write-Output 'Disabling start schedule according to Automation Variable "Internal_StartScheduleDisabled"...'
+            $startSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'Scheduled-StartVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-    #*******************STEP 4 execution starts********************************************
+            if ($null -ne $startSchedule) {
+                Set-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name $startSchedule.Name -ResourceGroupName $aroResourceGroupName -IsEnabled $false
+            }
+        }
+
+        if ($stopScheduleDisabled -eq 'true') {
+            Write-Output 'Disabling stop schedule according to Automation Variable "Internal_StopScheduleDisabled"...'
+            $stopSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'Scheduled-StopVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
+
+            if ($null -ne $stopSchedule) {
+                Set-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name $stopSchedule.Name -ResourceGroupName $aroResourceGroupName -IsEnabled $false
+            }
+        }
+
+        Write-Output 'Completed Step-4...'
+    } catch {
+        Write-Output 'Error Occurred in Step-4...'
+        Write-Output $_.Exception
+        Write-Error $_.Exception
+        exit
+    }
+
+
+    #*******************STEP 5 execution starts********************************************
 
     try {
 
         $checkScheduleBootstrap = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'startBootstrap' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-        if ($checkScheduleBootstrap -ne $null) {
+        if ($null -ne $checkScheduleBootstrap) {
 
             Write-Output 'Removing Bootstrap Schedule...'
 
@@ -306,14 +328,13 @@ try {
 
         Remove-AzAutomationRunbook -Name 'Bootstrap_Main' -ResourceGroupName $aroResourceGroupName -AutomationAccountName $automationAccountName -Force
 
-        Write-Output 'Completed Step-4...'
+        Write-Output 'Completed Step-5...'
     } catch {
-        Write-Output 'Error Occurred in Step-4...'
+        Write-Output 'Error Occurred in Step-5...'
         Write-Output $_.Exception
-        Write-Error $_.Exception
     }
 
-    #*******************STEP 4 execution ends**********************************************
+    #*******************STEP 5 execution ends********************************************
 
     Write-Output 'Bootstrap wrapper script execution completed...'
 

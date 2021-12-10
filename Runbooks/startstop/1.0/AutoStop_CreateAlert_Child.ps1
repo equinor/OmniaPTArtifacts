@@ -127,186 +127,214 @@ try {
         if ($AlertAction -eq 'Disable') {
             $ExVMAlerts = Get-AzAlertRule -ResourceGroup $VMObject.ResourceGroupName -DetailedOutput -ErrorAction SilentlyContinue
 
+            <<<<<<< HEAD
             if ($null -ne $ExVMAlerts) {
-                Write-Output 'Checking for any previous alert(s)...'
-                #Alerts exists so disable alert
-                foreach ($Alert in $ExVMAlerts) {
+                =======
+                if ($ExVMAlerts -ne $null) {
+                    >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
+                    Write-Output 'Checking for any previous alert(s)...'
+                    #Alerts exists so disable alert
+                    foreach ($Alert in $ExVMAlerts) {
 
-                    if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
-                        Write-Output "Previous alert ($($Alert.Name)) found and disabling now..."
-                        Add-AzMetricAlertRule -Name $Alert.Name `
-                            -Location $Alert.Location `
-                            -ResourceGroupName $ResourceGroupName `
-                            -TargetResourceId $resourceId `
-                            -MetricName $metricName `
-                            -Operator $condition `
-                            -Threshold $threshold `
-                            -WindowSize $timeWindow `
-                            -TimeAggregationOperator $timeAggregationOperator `
-                            -Action $actionWebhook `
-                            -Description $description -DisableRule
+                        if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
+                            Write-Output "Previous alert ($($Alert.Name)) found and disabling now..."
+                            Add-AzMetricAlertRule -Name $Alert.Name `
+                                -Location $Alert.Location `
+                                -ResourceGroupName $ResourceGroupName `
+                                -TargetResourceId $resourceId `
+                                -MetricName $metricName `
+                                -Operator $condition `
+                                -Threshold $threshold `
+                                -WindowSize $timeWindow `
+                                -TimeAggregationOperator $timeAggregationOperator `
+                                -Action $actionWebhook `
+                                -Description $description -DisableRule
 
-                        Write-Output "Alert ($($Alert.Name)) Disabled for VM $($VMObject.Name)"
+                            Write-Output "Alert ($($Alert.Name)) Disabled for VM $($VMObject.Name)"
 
-                    }
-                }
-
-            }
-        } elseif ($AlertAction -eq 'Create') {
-            #Getting ResourcegroupName and Location based on VM
-
-            #if (($VMState -eq 'PowerState/running') -or ($VMState -eq 'ReadyRole'))
-            #{
-            Write-Output 'Creating alerts...'
-            $VMAlerts = Get-AzAlertRule -ResourceGroupName $ResourceGroupName -DetailedOutput -ErrorAction SilentlyContinue
-
-            #Check if alerts exists and take action
-            if ($null -ne $VMAlerts) {
-                Write-Output 'Checking for any previous alert(s)...'
-                #Alerts exists so delete and re-create the new alert
-                foreach ($Alert in $VMAlerts) {
-
-                    if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
-                        Write-Output "Previous alert ($($Alert.Name)) found and deleting now..."
-                        #Remove the old alert
-                        Remove-AzAlertRule -Name $Alert.Name -ResourceGroupName $ResourceGroupName
-
-                        #Wait for few seconds to make sure it processed
-                        Do {
-                            #Start-Sleep 10
-                            $GetAlert = Get-AzAlertRule -ResourceGroupName $ResourceGroupName -Name $Alert.Name -DetailedOutput -ErrorAction SilentlyContinue
                         }
-                        while ($null -ne $GetAlert)
-
-                        Write-Output 'Generating a new alert with unique name...'
-                        #Now generate new unique alert name
-                        $NewAlertName = Generate-AlertName -OldAlertName $Alert.Name -VMName $VMObject.Name
                     }
+
                 }
+            } elseif ($AlertAction -eq 'Create') {
+                #Getting ResourcegroupName and Location based on VM
 
-            }
-            #Alert does not exist, so create new alert
-            Write-Output $NewAlertName
+                #if (($VMState -eq 'PowerState/running') -or ($VMState -eq 'ReadyRole'))
+                #{
+                Write-Output 'Creating alerts...'
+                $VMAlerts = Get-AzAlertRule -ResourceGroupName $ResourceGroupName -DetailedOutput -ErrorAction SilentlyContinue
 
-            Write-Output 'Adding a new alert to the VM...'
+                #Check if alerts exists and take action
+                <<<<<<< HEAD
+                if ($null -ne $VMAlerts) {
+                    =======
+                    if ($VMAlerts -ne $null) {
+                        >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
+                        Write-Output 'Checking for any previous alert(s)...'
+                        #Alerts exists so delete and re-create the new alert
+                        foreach ($Alert in $VMAlerts) {
 
-            Add-AzMetricAlertRule -Name $NewAlertName `
-                -Location $location `
-                -ResourceGroupName $ResourceGroupName `
-                -TargetResourceId $resourceId `
-                -MetricName $metricName `
-                -Operator $condition `
-                -Threshold $threshold `
-                -WindowSize $timeWindow `
-                -TimeAggregationOperator $timeAggregationOperator `
-                -Action $actionWebhook `
-                -Description $description
+                            if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
+                                Write-Output "Previous alert ($($Alert.Name)) found and deleting now..."
+                                #Remove the old alert
+                                Remove-AzAlertRule -Name $Alert.Name -ResourceGroupName $ResourceGroupName
 
+                                #Wait for few seconds to make sure it processed
+                                Do {
+                                    #Start-Sleep 10
+                                    $GetAlert = Get-AzAlertRule -ResourceGroupName $ResourceGroupName -Name $Alert.Name -DetailedOutput -ErrorAction SilentlyContinue
+                                }
+                                <<<<<<< HEAD
+                                while ($null -ne $GetAlert)
+                                =======
+                                while ($GetAlert -ne $null)
+                                >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
 
-            Write-Output "Alert Created for VM $($VMObject.Name.Trim())"
-        }
-    } else {
-        #Processing the alerts for ARM vms
-        $VMState = (Get-AzVM -ResourceGroupName $VMObject.ResourceGroupName -Name $VMObject.Name -Status -ErrorAction SilentlyContinue).Statuses[1].Code
-
-        $resourceId = "/subscriptions/$($SubId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.Compute/virtualMachines/$($VMObject.Name.Trim())"
-
-        Write-Output "Processing VM ($($VMObject.Name))"
-
-        Write-Output "Current VM state is ($($VMState))"
-
-
-        $actionWebhookArm = New-AzAlertRuleWebhook -ServiceUri $webhookARMUri
-
-        if ($AlertAction -eq 'Disable') {
-            $ExVMAlerts = Get-AzMetricAlertRuleV2 -ResourceGroupName $VMObject.ResourceGroupName -ErrorAction SilentlyContinue
-
-            if ($null -ne $ExVMAlerts) {
-                Write-Output 'Checking for any previous alert(s)...'
-                #Alerts exists so disable alert
-                foreach ($Alert in $ExVMAlerts) {
-                    if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
-                        Write-Output "Previous alert ($($Alert.Name)) found and disabling now..."
-
-                        Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -Name $Alert.Name | Add-AzMetricAlertRuleV2 -DisableRule
-
-                        Write-Output "Alert ($($Alert.Name)) Disabled for VM $($VMObject.Name)"
-                    }
-                }
-            }
-        } elseif ($AlertAction -eq 'Create') {
-            Write-Output 'Creating alerts...'
-            $VMAlerts = Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
-
-            #Check if alerts exists and take action
-            if ($null -ne $VMAlerts) {
-                Write-Output 'Checking for any previous alert(s)...'
-                #Alerts exists so delete and re-create the new alert
-                foreach ($Alert in $VMAlerts) {
-
-                    if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
-                        Write-Output "Previous alert ($($Alert.Name)) found and deleting now..."
-                        #Remove the old alert
-                        Remove-AzMetricAlertRuleV2 -Name $Alert.Name -ResourceGroupName $ResourceGroupName
-
-                        #Wait for few seconds to make sure it processed
-                        Do {
-                            #Start-Sleep 10
-                            $GetAlert = Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -Name $Alert.Name -ErrorAction SilentlyContinue
+                                Write-Output 'Generating a new alert with unique name...'
+                                #Now generate new unique alert name
+                                $NewAlertName = Generate-AlertName -OldAlertName $Alert.Name -VMName $VMObject.Name
+                            }
                         }
-                        while ($null -ne $GetAlert)
 
-                        Write-Output 'Generating a new alert with unique name...'
-                        #Now generate new unique alert name
-                        $NewAlertName = Generate-AlertName -OldAlertName $Alert.Name -VMName $VMObject.Name
                     }
+                    #Alert does not exist, so create new alert
+                    Write-Output $NewAlertName
+
+                    Write-Output 'Adding a new alert to the VM...'
+
+                    Add-AzMetricAlertRule -Name $NewAlertName `
+                        -Location $location `
+                        -ResourceGroupName $ResourceGroupName `
+                        -TargetResourceId $resourceId `
+                        -MetricName $metricName `
+                        -Operator $condition `
+                        -Threshold $threshold `
+                        -WindowSize $timeWindow `
+                        -TimeAggregationOperator $timeAggregationOperator `
+                        -Action $actionWebhook `
+                        -Description $description
+
+
+                    Write-Output "Alert Created for VM $($VMObject.Name.Trim())"
                 }
+            } else {
+                #Processing the alerts for ARM vms
+                $VMState = (Get-AzVM -ResourceGroupName $VMObject.ResourceGroupName -Name $VMObject.Name -Status -ErrorAction SilentlyContinue).Statuses[1].Code
 
-            }
+                $resourceId = "/subscriptions/$($SubId)/resourceGroups/$($ResourceGroupName)/providers/Microsoft.Compute/virtualMachines/$($VMObject.Name.Trim())"
 
-            #Alert does not exist, so create new alert
-            Write-Output $NewAlertName
+                Write-Output "Processing VM ($($VMObject.Name))"
 
-            Write-Output 'Adding a new alert to the VM...'
-
-            #Creating ARM alert is multi-step process.
-
-            #1. Check for existing action group first and reuse if not else Create the Action group receiver and Action group.
-
-            $actionGroup = New-Object Microsoft.Azure.Management.Monitor.Models.ActivityLogAlertActionGroup -ErrorAction SilentlyContinue
-
-            $actionGroupName = 'StSt_AutoStop_AG_ARM-' + $aroResourceGroupName
-
-            $actionGroupShortName = 'AutoStopAG'
-
-            $actionGroup = Get-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
-
-            if ($null -eq $actionGroup) {
-                #1a Create the webhook receiver
-                $webhookReceiverName = 'AutoStop_VM_WebhookReceiver_ARM'
-                $webhookReceiver = New-AzActionGroupReceiver -Name $webhookReceiverName -WebhookReceiver -ServiceUri $webhookARMUri
-
-                #1b Create the action group
-                Set-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName -ShortName $actionGroupShortName -Receiver $webhookReceiver
-                $actionGroup = Get-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName
-            }
-
-            #2 Create the action groupId
-            $actionGroupId = New-AzActionGroup -ActionGroupId $actionGroup.Id
-
-            #3 Create the condition/criteria
-            $criteria = New-AzMetricAlertRuleV2Criteria -MetricName $metricName -MetricNamespace 'Microsoft.Compute/virtualMachines' -TimeAggregation $timeAggregationOperator -Operator $condition -Threshold $threshold
-
-            #4 Now create the ARM metric alert
-
-            Add-AzMetricAlertRuleV2 -Name $NewAlertName -ResourceGroupName $ResourceGroupName -WindowSize $timeWindow -Frequency $frequency `
-                -TargetResourceId $resourceId -Condition $criteria -ActionGroup $actionGroupId -Severity $severity -Description $description
+                Write-Output "Current VM state is ($($VMState))"
 
 
-            Write-Output "Alert Created for VM $($VMObject.Name.Trim())"
-        }
-    }
-} catch {
-    Write-Output 'Error Occurred'
-    Write-Output $_.Exception
-}
+                $actionWebhookArm = New-AzAlertRuleWebhook -ServiceUri $webhookARMUri
+
+                if ($AlertAction -eq 'Disable') {
+                    $ExVMAlerts = Get-AzMetricAlertRuleV2 -ResourceGroupName $VMObject.ResourceGroupName -ErrorAction SilentlyContinue
+
+                    <<<<<<< HEAD
+                    if ($null -ne $ExVMAlerts) {
+                        =======
+                        if ($ExVMAlerts -ne $null) {
+                            >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
+                            Write-Output 'Checking for any previous alert(s)...'
+                            #Alerts exists so disable alert
+                            foreach ($Alert in $ExVMAlerts) {
+                                if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
+                                    Write-Output "Previous alert ($($Alert.Name)) found and disabling now..."
+
+                                    Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -Name $Alert.Name | Add-AzMetricAlertRuleV2 -DisableRule
+
+                                    Write-Output "Alert ($($Alert.Name)) Disabled for VM $($VMObject.Name)"
+                                }
+                            }
+                        }
+                    } elseif ($AlertAction -eq 'Create') {
+                        Write-Output 'Creating alerts...'
+                        $VMAlerts = Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue
+
+                        #Check if alerts exists and take action
+                        <<<<<<< HEAD
+                        if ($null -ne $VMAlerts) {
+                            =======
+                            if ($VMAlerts -ne $null) {
+                                >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
+                                Write-Output 'Checking for any previous alert(s)...'
+                                #Alerts exists so delete and re-create the new alert
+                                foreach ($Alert in $VMAlerts) {
+
+                                    if ($Alert.Name.ToLower().Contains($($VMObject.Name.ToLower().Trim()))) {
+                                        Write-Output "Previous alert ($($Alert.Name)) found and deleting now..."
+                                        #Remove the old alert
+                                        Remove-AzMetricAlertRuleV2 -Name $Alert.Name -ResourceGroupName $ResourceGroupName
+
+                                        #Wait for few seconds to make sure it processed
+                                        Do {
+                                            #Start-Sleep 10
+                                            $GetAlert = Get-AzMetricAlertRuleV2 -ResourceGroupName $ResourceGroupName -Name $Alert.Name -ErrorAction SilentlyContinue
+                                        }
+                                        <<<<<<< HEAD
+                                        while ($null -ne $GetAlert)
+                                        =======
+                                        while ($GetAlert -ne $null)
+                                        >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
+
+                                        Write-Output 'Generating a new alert with unique name...'
+                                        #Now generate new unique alert name
+                                        $NewAlertName = Generate-AlertName -OldAlertName $Alert.Name -VMName $VMObject.Name
+                                    }
+                                }
+
+                            }
+
+                            #Alert does not exist, so create new alert
+                            Write-Output $NewAlertName
+
+                            Write-Output 'Adding a new alert to the VM...'
+
+                            #Creating ARM alert is multi-step process.
+
+                            #1. Check for existing action group first and reuse if not else Create the Action group receiver and Action group.
+
+                            $actionGroup = New-Object Microsoft.Azure.Management.Monitor.Models.ActivityLogAlertActionGroup -ErrorAction SilentlyContinue
+
+                            $actionGroupName = 'StSt_AutoStop_AG_ARM-' + $aroResourceGroupName
+
+                            $actionGroupShortName = 'AutoStopAG'
+
+                            $actionGroup = Get-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
+
+                            <<<<<<< HEAD
+                            if ($null -eq $actionGroup) {
+                                =======
+                                if ($actionGroup -eq $null) {
+                                    >>>>>>> 1860b9ebcd4584a0d65d53b8d8a92135eb87b37e
+                                    #1a Create the webhook receiver
+                                    $webhookReceiverName = 'AutoStop_VM_WebhookReceiver_ARM'
+                                    $webhookReceiver = New-AzActionGroupReceiver -Name $webhookReceiverName -WebhookReceiver -ServiceUri $webhookARMUri
+
+                                    #1b Create the action group
+                                    Set-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName -ShortName $actionGroupShortName -Receiver $webhookReceiver
+                                    $actionGroup = Get-AzActionGroup -Name $actionGroupName -ResourceGroupName $aroResourceGroupName
+                                }
+
+                                #2 Create the action groupId
+                                $actionGroupId = New-AzActionGroup -ActionGroupId $actionGroup.Id
+
+                                #3 Create the condition/criteria
+                                $criteria = New-AzMetricAlertRuleV2Criteria -MetricName $metricName -MetricNamespace 'Microsoft.Compute/virtualMachines' -TimeAggregation $timeAggregationOperator -Operator $condition -Threshold $threshold
+
+                                #4 Now create the ARM metric alert
+
+                                Add-AzMetricAlertRuleV2 -Name $NewAlertName -ResourceGroupName $ResourceGroupName -WindowSize $timeWindow -Frequency $frequency `
+                                    -TargetResourceId $resourceId -Condition $criteria -ActionGroup $actionGroupId -Severity $severity -Description $description
+
+
+                                Write-Output "Alert Created for VM $($VMObject.Name.Trim())"
+                            }
+                        }
+                    } catch {
+                        Write-Output 'Error Occurred'
+                        Write-Output $_.Exception
+                    }

@@ -42,7 +42,7 @@ do {
 
             $Status = Stop-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName -Force
 
-            if ($Status -eq $null) {
+            if ($null -eq $Status) {
                 Write-Output "Error occurred while stopping the Virtual Machine $($VMName) hence retrying..."
 
                 if ($Attempt -gt $RetryCount) {
@@ -68,7 +68,7 @@ do {
 
             $Status = Start-AzVM -Name $VMName -ResourceGroupName $ResourceGroupName
 
-            if ($Status -eq $null) {
+            if ($null -eq $Status) {
                 Write-Output "Error occurred while starting the Virtual Machine $($VMName) hence retrying..."
 
                 if ($Attempt -gt $RetryCount) {

@@ -8,6 +8,7 @@
 Version History
 v1.0 - Initial Release
 v2.0 - Refactored Az modules
+v2.1 - Added possibility for disabling schedules after deploy
 #>
 
 
@@ -17,8 +18,10 @@ Write-Output 'Bootstrap main script execution started...'
 
 #---------Inputs variables for NewRunAsAccountCertKeyVault.ps1 child bootstrap script--------------
 $automationAccountName = Get-AutomationVariable -Name 'Internal_AutomationAccountName'
-$SubscriptionId = Get-AutomationVariable -Name 'Internal_AzureSubscriptionId'
 $aroResourceGroupName = Get-AutomationVariable -Name 'Internal_ResourceGroupName'
+
+$startScheduleDisabled = Get-AutomationVariable -Name 'Internal_StartScheduleDisabled'
+$stopScheduleDisabled = Get-AutomationVariable -Name 'Internal_StopScheduleDisabled'
 
 [string] $FailureMessage = 'Failed to execute the command'
 [int] $RetryCount = 3
@@ -279,8 +282,36 @@ try {
 
     #~~~~~~~~~~~~~~~~~~~~STEP 3 execution ends~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    #~~~~~~~~~~~~~~~~~~~~STEP 4 execution starts~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    try {
+        if ($startScheduleDisabled -eq 'true') {
+            Write-Output 'Disabling start schedule according to Automation Variable "Internal_StartScheduleDisabled"...'
+            $startSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'Scheduled-StartVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
-    #*******************STEP 4 execution starts********************************************
+            if ($null -ne $startSchedule) {
+                Set-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name $startSchedule.Name -ResourceGroupName $aroResourceGroupName -IsEnabled $false
+            }
+        }
+
+        if ($stopScheduleDisabled -eq 'true') {
+            Write-Output 'Disabling stop schedule according to Automation Variable "Internal_StopScheduleDisabled"...'
+            $stopSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'Scheduled-StopVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
+
+            if ($null -ne $stopSchedule) {
+                Set-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name $stopSchedule.Name -ResourceGroupName $aroResourceGroupName -IsEnabled $false
+            }
+        }
+
+        Write-Output 'Completed Step-4...'
+    } catch {
+        Write-Output 'Error Occurred in Step-4...'
+        Write-Output $_.Exception
+        Write-Error $_.Exception
+        exit
+    }
+
+
+    #*******************STEP 5 execution starts********************************************
 
     try {
 
@@ -297,14 +328,13 @@ try {
 
         Remove-AzAutomationRunbook -Name 'Bootstrap_Main' -ResourceGroupName $aroResourceGroupName -AutomationAccountName $automationAccountName -Force
 
-        Write-Output 'Completed Step-4...'
+        Write-Output 'Completed Step-5...'
     } catch {
-        Write-Output 'Error Occurred in Step-4...'
+        Write-Output 'Error Occurred in Step-5...'
         Write-Output $_.Exception
-        Write-Error $_.Exception
     }
 
-    #*******************STEP 4 execution ends**********************************************
+    #*******************STEP 5 execution ends********************************************
 
     Write-Output 'Bootstrap wrapper script execution completed...'
 

@@ -12,7 +12,9 @@ v1.0 - Initial Release
 param
 (
     [Parameter (Mandatory = $false)]
-    [object] $WebHookData
+    [object] $WebHookData,
+    [string]$ExcludedTagName = 'OmniaPT_AutoStartStopDisabled',
+    [String]$ExcludedTagValue = 'True'
 )
 
 # If runbook was called from Webhook, WebhookData will not be null.
@@ -69,8 +71,12 @@ if ($WebHookData) {
             $Context
 
             Write-Output 'Successfully logged into Azure subscription using Az cmdlets...'
+            $vmTags = Get-AzVM -ResourceGroupName $context.resourceGroupName -Name $context.resourceName | Select-Object Tags
 
-            if ($context.resourceType -eq 'Microsoft.Compute/virtualMachines') {
+            if ($vmTags.Tags[$ExcludedTagName] -eq $ExcludedTagValue) {
+                Write-Output "Virtual Machine $($context.resourceName) excluded by tag."
+                $RetryFlag = $false
+            } elseif ($context.resourceType -eq 'Microsoft.Compute/virtualMachines') {
                 Write-Output "~$($context.resourceName)"
 
                 Write-Output "Stopping Virtual Machine : $($context.resourceName)"

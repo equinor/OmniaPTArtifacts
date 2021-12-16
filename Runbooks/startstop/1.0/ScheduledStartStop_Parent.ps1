@@ -1,13 +1,13 @@
 ﻿<#
 .SYNOPSIS
-	 Wrapper script for get all the VM's in all RG's or subscription level and then call the Start or Stop runbook
+    Wrapper script for get all the VM's in all RG's or subscription level and then call the Start or Stop runbook
 .DESCRIPTION
-	 This runbook is intended to start/stop VMs (both classic and ARM based VMs) that resides in a given list of Azure resource group(s).If the resource group list is empty, then the script gets all the VMs in the current subscription.
-	 Upon completion of the runbook, an option to email results of the started VM can be sent via SendGrid account.
+    This runbook is intended to start/stop VMs (both classic and ARM based VMs) that resides in a given list of Azure resource group(s).If the resource group list is empty, then the script gets all the VMs in the current subscription.
+    Upon completion of the runbook, an option to email results of the started VM can be sent via SendGrid account.
 
-	 This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
+    This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
 .EXAMPLE
-	.\ScheduledStartStop_Parent.ps1 -Action "Value1" -WhatIf "False"
+    .\ScheduledStartStop_Parent.ps1 -Action "Value1" -WhatIf "False"
 
 .PARAMETER
     Parameters are read in from Azure Automation variables.

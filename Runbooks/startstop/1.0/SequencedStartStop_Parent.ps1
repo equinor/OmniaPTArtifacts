@@ -1,12 +1,12 @@
 ﻿<#
 .SYNOPSIS
-	This runbook used to perform sequenced start or stop Azure RM.
+    This runbook used to perform sequenced start or stop Azure RM.
 .DESCRIPTION
-	This runbook used to perform sequenced start or stop Azure RM.
-	Create a tag called “sequencestart” on each VM that you want to sequence start activity for.Create a tag called “sequencestop” on each VM that you want to sequence stop activity for. The value of the tag should be an integer (1,2,3) that corresponds to the order you want to start\stop. For both action, the order goes ascending (1,2,3) . WhatIf behaves the same as in other runbooks.
-	Upon completion of the runbook, an option to email results of the started VM can be sent via Action Groups and alerts.
+    This runbook used to perform sequenced start or stop Azure RM.
+    Create a tag called “sequencestart” on each VM that you want to sequence start activity for.Create a tag called “sequencestop” on each VM that you want to sequence stop activity for. The value of the tag should be an integer (1,2,3) that corresponds to the order you want to start\stop. For both action, the order goes ascending (1,2,3) . WhatIf behaves the same as in other runbooks.
+    Upon completion of the runbook, an option to email results of the started VM can be sent via Action Groups and alerts.
 
-	This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
+    This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
  .PARAMETER
     Parameters are read in from Azure Automation variables.
     Variables (editable):

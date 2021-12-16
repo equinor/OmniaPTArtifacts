@@ -7,14 +7,14 @@
     Upon completion of the runbook, an option to email results of the started VM can be sent via Action Groups and alerts.
 
     This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
- .PARAMETER
+.PARAMETER
     Parameters are read in from Azure Automation variables.
     Variables (editable):
     -  External_Start_ResourceGroupNames    :  ResourceGroup that contains VMs to be started. Must be in the same subscription that the Azure Automation Run-As account has permission to manage.
     -  External_Stop_ResourceGroupNames     :  ResourceGroup that contains VMs to be stopped. Must be in the same subscription that the Azure Automation Run-As account has permission to manage.
     -  External_ExcludeVMNames              :  VM names to be excluded from being started.
 .EXAMPLE
-	.\SequencedStartStop_Parent.ps1 -Action "Value1"
+    .\SequencedStartStop_Parent.ps1 -Action "Value1"
 
 #>
 

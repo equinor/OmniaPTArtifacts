@@ -144,7 +144,8 @@ try {
                             -WindowSize $timeWindow `
                             -TimeAggregationOperator $timeAggregationOperator `
                             -Action $actionWebhook `
-                            -Description $description -DisableRule
+                            -Description $description `
+                            -DisableRule
 
                         Write-Output "Alert ($($Alert.Name)) Disabled for VM $($VMObject.Name)"
 
@@ -214,7 +215,6 @@ try {
         Write-Output "Processing VM ($($VMObject.Name))"
 
         Write-Output "Current VM state is ($($VMState))"
-
 
         $actionWebhookArm = New-AzAlertRuleWebhook -ServiceUri $webhookARMUri
 

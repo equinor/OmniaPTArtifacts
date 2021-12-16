@@ -1,9 +1,9 @@
 ﻿<#
 .SYNOPSIS
-    This runbook used to perform action start or stop in classic VM group by Cloud Services
+	This runbook used to perform action start or stop in classic VM group by Cloud Services
 .DESCRIPTION
-    This runbook used to perform action start or stop in classic VM group by Cloud Services
-    This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
+	This runbook used to perform action start or stop in classic VM group by Cloud Services
+	This runbook requires the Azure Automation Run-As (Service Principle) account, which must be added when creating the Azure Automation account.
  .EXAMPLE
     .\ScheduledStartStop_Base_Classic.ps1 -CloudServiceName "Value1" -Action "Value2" -VMList "VM1,VM2,VM3"
 

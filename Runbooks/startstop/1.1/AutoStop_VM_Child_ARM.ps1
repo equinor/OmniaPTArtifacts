@@ -13,8 +13,8 @@ param
 (
     [Parameter (Mandatory = $false)]
     [object] $WebHookData,
-    [string]$ExcludedTagName = 'OmniaPT_AutoStartStopDisabled',
-    [String]$ExcludedTagValue = 'True'
+    [string]$IncludedTagName = 'OmniaPT_AutoStartStopEnabled',
+    [String]$IncludedTagValue = 'True'
 )
 
 # If runbook was called from Webhook, WebhookData will not be null.
@@ -71,39 +71,37 @@ if ($WebHookData) {
             $Context
 
             Write-Output 'Successfully logged into Azure subscription using Az cmdlets...'
-            $vmTags = Get-AzVM -ResourceGroupName $context.resourceGroupName -Name $context.resourceName | Select-Object Tags
 
-            if ($vmTags.Tags[$ExcludedTagName] -eq $ExcludedTagValue) {
-                Write-Output "Virtual Machine $($context.resourceName) excluded by tag."
-                $RetryFlag = $false
-            } elseif ($context.resourceType -eq 'Microsoft.Compute/virtualMachines') {
+            if ($context.resourceType -eq 'Microsoft.Compute/virtualMachines') {
                 Write-Output "~$($context.resourceName)"
+                $vmTags = Get-AzVM -ResourceGroupName $context.resourceGroupName -Name $context.resourceName | Select-Object Tags
 
-                Write-Output "Stopping Virtual Machine : $($context.resourceName)"
-
-                $Status = Stop-AzVM -Name $context.resourceName -ResourceGroupName $context.resourceGroupName -Force
+                if ($vmTags.Tags[$IncludedTagName] -eq $IncludedTagValue) {
+                    Write-Output "Virtual Machine $($context.resourceName) included by tag."
+                    Write-Output "Stopping Virtual Machine : $($context.resourceName)"
+                    $Status = Stop-AzVM -Name $context.resourceName -ResourceGroupName $context.resourceGroupName -Force
+                } else {
+                    Write-Output "Virtual Machine $($context.resourceName) not included by tag. Skipping."
+                    $Status = 'NotIncluded'
+                }
 
                 if ($null -eq $Status) {
                     Write-Output "Error occurred while stopping the Virtual Machine $($context.resourceName) hence retrying..."
-
                     if ($Attempt -gt $RetryCount) {
                         Write-Output "Reached the max $RetryCount retry attempts so please resubmit the job later..."
-
                         $RetryFlag = $false
                     } else {
                         Write-Output "[$Attempt/$RetryCount] Retrying in $TimeoutInSecs seconds..."
-
                         Start-Sleep -Seconds $TimeoutInSecs
-
                         $Attempt = $Attempt + 1
-
                         $RetryFlag = $true
                     }
                 } else {
-                    Write-Output "Successfully stopped the Virtual Machine : $($context.resourceName)"
-
-                    Write-Output "$context.resourceName"
-
+                    if ($Status -eq 'NotIncluded') {
+                        Write-Output "Virtual Machine $($context.resourceName) not stopped because it was not included by tag."
+                    } else {
+                        Write-Output "Successfully stopped the Virtual Machine : $($context.resourceName)"
+                    }
                     $RetryFlag = $false
                 }
             }

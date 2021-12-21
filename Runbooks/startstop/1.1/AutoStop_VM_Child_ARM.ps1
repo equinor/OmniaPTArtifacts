@@ -98,9 +98,9 @@ if ($WebHookData) {
                     }
                 } else {
                     if ($Status -eq 'NotIncluded') {
-                        Write-Output "Successfully stopped the Virtual Machine : $($context.resourceName)"
-                    } else {
                         Write-Output "Virtual Machine $($VMName) not stopped because it was not included by tag."
+                    } else {
+                        Write-Output "Successfully stopped the Virtual Machine : $($context.resourceName)"
                     }
                     $RetryFlag = $false
                 }

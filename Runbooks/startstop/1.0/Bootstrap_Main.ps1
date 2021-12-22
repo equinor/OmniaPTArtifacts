@@ -33,10 +33,14 @@ do {
     #-----L O G I N - A U T H E N T I C A T I O N-----
     $connectionName = 'AzureRunAsConnection'
     try {
-        Connect-AzAccount -Identity
+        # Ensures you do not inherit an AzContext in your runbook
+        Disable-AzContextAutosave -Scope Process
 
-        $Context = Get-AzContext
-        $Context
+        # Connect to Azure with system-assigned managed identity
+        $Context = (Connect-AzAccount -Identity).context
+
+        # set and store context
+        $Context = Set-AzContext -SubscriptionName $Context.Subscription -DefaultProfile $Context
 
         Write-Output 'Successfully logged into Azure subscription using Az cmdlets...'
 

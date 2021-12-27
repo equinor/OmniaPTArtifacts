@@ -549,10 +549,10 @@ function PerformActionOnSequencedTaggedVMList($Sequences, [string]$Action, $TagN
         }
     }
 }
-function CheckVMState ($vmObj, [string]$Action) {
+function CheckVMState ($VMObject, [string]$Action) {
     [bool]$IsValid = $false
 
-    $CheckVMState = (Get-AzVM -ResourceGroupName $vmObj.ResourceGroupName -Name $vmObj.Name -Status -ErrorAction SilentlyContinue).Statuses.Code[1]
+    $CheckVMState = (Get-AzVM -ResourceGroupName $VMObject.ResourceGroupName -Name $VMObject.Name -Status -ErrorAction SilentlyContinue).Statuses.Code[1]
     if ($Action.ToLower() -eq 'start' -and $CheckVMState -eq 'PowerState/running') {
         $IsValid = $true
     } elseif ($Action.ToLower() -eq 'stop' -and $CheckVMState -eq 'PowerState/deallocated') {

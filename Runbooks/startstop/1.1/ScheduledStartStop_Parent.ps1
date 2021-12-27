@@ -21,7 +21,9 @@
 Param(
     [Parameter(Mandatory = $true, HelpMessage = 'Enter the value for Action. Values can be either stop or start')][String]$Action,
     [Parameter(Mandatory = $false, HelpMessage = 'Enter the value for WhatIf. Values can be either true or false')][bool]$WhatIf = $false,
-    [Parameter(Mandatory = $false, HelpMessage = 'Enter the VMs separated by comma(,)')][string]$VMList
+    [Parameter(Mandatory = $false, HelpMessage = 'Enter the VMs separated by comma(,)')][string]$VMList,
+    [string]$IncludedTagName = 'OmniaPT_AutoStartStopEnabled',
+    [String]$IncludedTagValue = 'True'
 )
 
 function ScheduleSnoozeAction ($VMObject, [string]$Action) {
@@ -46,7 +48,7 @@ function ScheduleSnoozeAction ($VMObject, [string]$Action) {
         }
 
     } elseif ($VMObject.Type -eq 'ResourceManager') {
-        Write-Output "Performing the schedule $($Action) for the VM : $($VMObject.Name)"
+        $vmTags = Get-AzVM -ResourceGroupName $VMObject.ResourceGroupName -Name $VMObject.Name | Select-Object Tags
         $runbookName = 'ScheduledStartStop_Child'
     }
 
@@ -60,9 +62,16 @@ function ScheduleSnoozeAction ($VMObject, [string]$Action) {
 
     do {
         try {
-            $runbook = Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name $runbookName -ResourceGroupName $aroResourceGroupName -Parameters $params
-
-            Write-Output "Triggered the child runbook for ARM VM : $($VMObject.Name)"
+            if ($vmTags.Tags[$IncludedTagName] -eq $IncludedTagValue) {
+                Write-Output "Performing the schedule $($Action) for the VM : $($VMObject.Name)"
+                Write-Output "Virtual Machine $($VMObject.Name) included by tag."
+                $runbook = Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name $runbookName -ResourceGroupName $aroResourceGroupName -Parameters $params
+                Write-Output "Triggered the child runbook for ARM VM : $($VMObject.Name)"
+            } else {
+                Write-Output "Not performing the schedule $($Action) for the VM : $($VMObject.Name)"
+                Write-Output "Virtual Machine $($VMObject.Name) not included by tag."
+                Write-Output "Child runbook for ARM VM : $($VMObject.Name) not triggered."
+            }
 
             $RetryFlag = $false
         } catch {

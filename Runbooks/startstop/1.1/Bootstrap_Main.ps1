@@ -33,10 +33,14 @@ do {
     #-----L O G I N - A U T H E N T I C A T I O N-----
     $connectionName = 'AzureRunAsConnection'
     try {
-        Connect-AzAccount -Identity
+        # Ensures you do not inherit an AzContext in your runbook
+        Disable-AzContextAutosave -Scope Process
 
-        $Context = Get-AzContext
-        $Context
+        # Connect to Azure with system-assigned managed identity
+        $Context = (Connect-AzAccount -Identity).context
+
+        # set and store context
+        $Context = Set-AzContext -SubscriptionName $Context.Subscription -DefaultProfile $Context
 
         Write-Output 'Successfully logged into Azure subscription using Az cmdlets...'
 
@@ -286,7 +290,7 @@ try {
     try {
         if ($startScheduleDisabled -eq 'true') {
             Write-Output 'Disabling start schedule according to Automation Variable "Internal_StartScheduleDisabled"...'
-            $startSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'Scheduled-StartVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
+            $startSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'OmniaPT_Scheduled-StartVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
             if ($null -ne $startSchedule) {
                 Set-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name $startSchedule.Name -ResourceGroupName $aroResourceGroupName -IsEnabled $false
@@ -295,7 +299,7 @@ try {
 
         if ($stopScheduleDisabled -eq 'true') {
             Write-Output 'Disabling stop schedule according to Automation Variable "Internal_StopScheduleDisabled"...'
-            $stopSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'Scheduled-StopVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
+            $stopSchedule = Get-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name 'OmniaPT_Scheduled-StopVM' -ResourceGroupName $aroResourceGroupName -ErrorAction SilentlyContinue
 
             if ($null -ne $stopSchedule) {
                 Set-AzAutomationSchedule -AutomationAccountName $automationAccountName -Name $stopSchedule.Name -ResourceGroupName $aroResourceGroupName -IsEnabled $false
@@ -321,7 +325,7 @@ try {
 
             Write-Output 'Removing Bootstrap Schedule...'
 
-            Remove-AzAutomationSchedule -Name 'startBootstrap' -AutomationAccountName $automationAccountName -ResourceGroupName $aroResourceGroupName -Force
+            Remove-AzAutomationSchedule -Name 'OmniaPT_startBootstrap' -AutomationAccountName $automationAccountName -ResourceGroupName $aroResourceGroupName -Force
         }
 
         Write-Output 'Removing Bootstrap Runbook...'

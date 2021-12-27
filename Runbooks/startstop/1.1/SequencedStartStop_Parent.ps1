@@ -22,7 +22,9 @@ Param(
     [Parameter(Mandatory = $true, HelpMessage = 'Enter the value for Action. Values can be either stop or start')][String]$Action,
     [Parameter(Mandatory = $false, HelpMessage = 'Enter the value for WhatIf. Values can be either true or false')][bool]$WhatIf = $false,
     [Parameter(Mandatory = $false, HelpMessage = 'Enter the value for ContinueOnError. Values can be either true or false')][bool]$ContinueOnError = $false,
-    [Parameter(Mandatory = $false, HelpMessage = 'Enter the VMs separated by comma(,)')][string]$VMList
+    [Parameter(Mandatory = $false, HelpMessage = 'Enter the VMs separated by comma(,)')][string]$VMList,
+    [string]$IncludedTagName = 'OmniaPT_AutoStartStopEnabled',
+    [String]$IncludedTagValue = 'True'
 )
 
 function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagName, $ExcludeList) {
@@ -91,6 +93,7 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
                 Write-Output "Executing runbook ScheduledStartStop_Child to perform the $($Action) action on VM: $($vmobj.Name)"
 
                 $params = @{'VMName' = "$($vmObj.Name)"; 'Action' = $Action; 'ResourceGroupName' = "$($vmObj.ResourceGroupName)" }
+                $vmTags = Get-AzVM -ResourceGroupName $vmObj.ResourceGroupName -Name $vmObj.Name | Select-Object Tags
 
                 #Retry logic for Start-AzAutomationRunbook cmdlet
 
@@ -102,9 +105,12 @@ function PerformActionOnSequencedTaggedVMAll($Sequences, [string]$Action, $TagNa
 
                 do {
                     try {
-                        $runbook = Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name 'ScheduledStartStop_Child' -ResourceGroupName $aroResourceGroupName –Parameters $params
-
-                        Write-Output "Triggered the child runbook for ARM VM : $($vmObj.Name)"
+                        if ($vmTags.Tags[$IncludedTagName] -eq $IncludedTagValue) {
+                            $runbook = Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name 'ScheduledStartStop_Child' -ResourceGroupName $aroResourceGroupName –Parameters $params
+                            Write-Output "Triggered the child runbook for ARM VM : $($vmObj.Name)"
+                        } else {
+                            Write-Output "Child runbook for ARM VM : $($vmObj.Name) not triggered."
+                        }
 
                         $RetryFlag = $false
                     } catch {
@@ -543,10 +549,10 @@ function PerformActionOnSequencedTaggedVMList($Sequences, [string]$Action, $TagN
         }
     }
 }
-function CheckVMState ($VMObject, [string]$Action) {
+function CheckVMState ($vmObj, [string]$Action) {
     [bool]$IsValid = $false
 
-    $CheckVMState = (Get-AzVM -ResourceGroupName $VMObject.ResourceGroupName -Name $VMObject.Name -Status -ErrorAction SilentlyContinue).Statuses.Code[1]
+    $CheckVMState = (Get-AzVM -ResourceGroupName $vmObj.ResourceGroupName -Name $vmObj.Name -Status -ErrorAction SilentlyContinue).Statuses.Code[1]
     if ($Action.ToLower() -eq 'start' -and $CheckVMState -eq 'PowerState/running') {
         $IsValid = $true
     } elseif ($Action.ToLower() -eq 'stop' -and $CheckVMState -eq 'PowerState/deallocated') {

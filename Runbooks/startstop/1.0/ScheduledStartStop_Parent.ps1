@@ -240,6 +240,7 @@ try {
     }
     $AzureVMListTemp = $null
     $AzureVMList = @()
+    if (!$AzVMList) { $AzVMList = $null }
 
     if ($null -ne $AzVMList) {
         ##Action to be taken based on VM List and not on Resource group.

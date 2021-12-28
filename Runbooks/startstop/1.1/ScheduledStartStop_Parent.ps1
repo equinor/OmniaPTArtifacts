@@ -23,7 +23,8 @@ Param(
     [Parameter(Mandatory = $false, HelpMessage = 'Enter the value for WhatIf. Values can be either true or false')][bool]$WhatIf = $false,
     [Parameter(Mandatory = $false, HelpMessage = 'Enter the VMs separated by comma(,)')][string]$VMList,
     [string]$IncludedTagName = 'OmniaPT_AutoStartStopEnabled',
-    [String]$IncludedTagValue = 'True'
+    [string]$IncludedTagValue = 'True',
+    [string]$verboseLogging = 'False'
 )
 
 function ScheduleSnoozeAction ($VMObject, [string]$Action) {
@@ -68,9 +69,11 @@ function ScheduleSnoozeAction ($VMObject, [string]$Action) {
                 $runbook = Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name $runbookName -ResourceGroupName $aroResourceGroupName -Parameters $params
                 Write-Output "Triggered the child runbook for ARM VM : $($VMObject.Name)"
             } else {
-                Write-Output "Not performing the schedule $($Action) for the VM : $($VMObject.Name)"
-                Write-Output "Virtual Machine $($VMObject.Name) not included by tag."
-                Write-Output "Child runbook for ARM VM : $($VMObject.Name) not triggered."
+                if ($verboseLogging -eq 'True') {
+                    Write-Output "Not performing the schedule $($Action) for the VM : $($VMObject.Name)"
+                    Write-Output "Virtual Machine $($VMObject.Name) not included by tag."
+                    Write-Output "Child runbook for ARM VM : $($VMObject.Name) not triggered."
+                }
             }
 
             $RetryFlag = $false
@@ -249,6 +252,7 @@ try {
     }
     $AzureVMListTemp = $null
     $AzureVMList = @()
+    if (!$AzVMList) { $AzVMList = $null }
 
     if ($null -ne $AzVMList) {
         ##Action to be taken based on VM List and not on Resource group.
@@ -256,7 +260,6 @@ try {
         Write-Output 'VM List is given to take action (Exclude list will be ignored)...'
         $AzureVMList = CheckValidAzureVM -FilterVMList $AzVMList -EnableClassicVMs $enableClassicVMs
     } else {
-
         ##Getting VM Details based on RG List or Subscription
         if (($null -ne $VMRGList) -and ($VMRGList -ne '*')) {
             foreach ($Resource in $VMRGList) {
@@ -270,7 +273,9 @@ try {
                     #Flag check for CSP subs
                     if ($enableClassicVMs) {
                         # Get classic VM resources in group and record target state for each in table
-                        Write-Output "Getting all the Classic VMs from Resource Group : $($Resource.Trim())"
+                        if ($verboseLogging -eq 'True') {
+                            Write-Output "Getting all the Classic VMs from Resource Group : $($Resource.Trim())"
+                        }
 
                         $taggedClassicVMs = Get-AzResource -ResourceGroupName $Resource -ResourceType 'Microsoft.ClassicCompute/virtualMachines'
 
@@ -282,7 +287,9 @@ try {
                     }
 
                     # Get resource manager VM resources in group and record target state for each in table
-                    Write-Output "Getting all the ARM VMs from Resource Group : $($Resource.Trim())"
+                    if ($verboseLogging -eq 'True') {
+                        Write-Output "Getting all the ARM VMs from Resource Group : $($Resource.Trim())"
+                    }
 
                     $taggedRMVMs = Get-AzResource -ResourceGroupName $Resource -ResourceType 'Microsoft.Compute/virtualMachines'
                     foreach ($vmResource in $taggedRMVMs) {
@@ -299,23 +306,31 @@ try {
                 #Flag check for CSP subs
                 if ($enableClassicVMs) {
                     # Get classic VM resources in group and record target state for each in table
-                    Write-Output "Getting all the Classic VMs from Resource Group : $($ResourceGroup.ResourceGroupName)"
+                    if ($verboseLogging -eq 'True') {
+                        Write-Output "Getting all the Classic VMs from Resource Group : $($ResourceGroup.ResourceGroupName)"
+                    }
 
                     $taggedClassicVMs = Get-AzResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType 'Microsoft.ClassicCompute/virtualMachines'
 
                     foreach ($vmResource in $taggedClassicVMs) {
-                        Write-Output "ResourceGroup : $($vmResource.ResourceGroupName) : Classic VM : $($vmResource.Name)"
+                        if ($verboseLogging -eq 'True') {
+                            Write-Output "ResourceGroup : $($vmResource.ResourceGroupName) : Classic VM : $($vmResource.Name)"
+                        }
                         $AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = 'Classic' }
                     }
                 }
 
                 # Get resource manager VM resources in group and record target state for each in table
-                Write-Output "Getting all the ARM VMs from Resource Group : $($ResourceGroup.ResourceGroupName)"
+                if ($verboseLogging -eq 'True') {
+                    Write-Output "Getting all the ARM VMs from Resource Group : $($ResourceGroup.ResourceGroupName)"
+                }
 
                 $taggedRMVMs = Get-AzResource -ResourceGroupName $ResourceGroup.ResourceGroupName -ResourceType 'Microsoft.Compute/virtualMachines'
 
                 foreach ($vmResource in $taggedRMVMs) {
-                    Write-Output "ResourceGroup : $($vmResource.ResourceGroupName) : ARM VM : $($vmResource.Name)"
+                    if ($verboseLogging -eq 'True') {
+                        Write-Output "ResourceGroup : $($vmResource.ResourceGroupName) : ARM VM : $($vmResource.Name)"
+                    }
                     $AzureVMList += @{Name = $vmResource.Name; ResourceGroupName = $vmResource.ResourceGroupName; Type = 'ResourceManager' }
                 }
             }
@@ -358,7 +373,7 @@ try {
                 $ActualVMListOutput = $ActualVMListOutput + $VM.Name + ' '
                 ScheduleSnoozeAction -VMObject $VM -Action $Action
             }
-            Write-Output "~Attempted the $($Action) action on the following ARM VMs : $($ActualVMListOutput)"
+            #Write-Output "~Attempted the $($Action) action on the following ARM VMs : $($ActualVMListOutput)"
         } else {
             Write-Output "No ARM VMs provided to take $($Action) action..."
         }
@@ -389,7 +404,7 @@ try {
                 $runbook = Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name $runbookName -ResourceGroupName $aroResourceGroupName -Parameters $params
                 $ActualVMListOutput = $ActualVMListOutput + $hashtbl.$cs + ' '
             }
-            Write-Output "~Attempted the $($Action) action on the following Classic VMs : $($ActualVMListOutput)"
+            #Write-Output "~Attempted the $($Action) action on the following Classic VMs : $($ActualVMListOutput)"
         }
 
     } elseif ($WhatIf -eq $true) {

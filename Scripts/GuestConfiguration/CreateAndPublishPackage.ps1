@@ -17,13 +17,13 @@ Will create a package and publish it to a specified storage account
 Will create a package, publish it, and create an Azure Policy for assigning it
 $PolicyParameters = @{
     "PolicyId" = "1111-22222-3333-44444-55555"
-        "DisplayName" = "MyDisplayName"
-        "Description" = "MyDescription"
-        "Path" = ".\myPolicyFiles"
-        "Platform" = "Windows/Linux"
-        "Version" = "1.0.0.0"
-        "Mode" = "ApplyAndMonitor/ApplyAndAutoCorrect/Audit"
-        "Tag" = @{"TagName"="TagValue"}
+    "DisplayName" = "MyDisplayName"
+    "Description" = "MyDescription"
+    "Path" = ".\myPolicyFiles"
+    "Platform" = "Windows" # Can be either Windows or Linux
+    "Version" = "1.0.0.0"
+    "Mode" = "ApplyAndAutoCorrect" # Can be one of ApplyAndMonitor/ApplyAndAutoCorrect/Audit
+    "Tag" = @{"Tag1Name"="Tag1Value";"Tag2Name"="Tag2Value"}
 }
 .\CreateAndPubilshPackage.ps1 -ConfigurationName 'GuestConfig_Baseline' `
     -ConfigurationType 'AuditAndSet' `

@@ -70,24 +70,40 @@ $package = New-GuestConfigurationPackage `
     -Type $ConfigurationType `
     -Force
 
-if ($PublishPackage -and $StorageAccountName -and $ResourceGroupName) {
-    $ContentUri = Publish-GuestConfigurationPackage -Path $package.Path -ResourceGroupName $ResourceGroupName -StorageAccountName $StorageAccountName -StorageContainerName $StorageContainerName -Force | ForEach-Object ContentUri
+try {
+    $storageAccount = Get-AzStorageAccount -Name $StorageAccountName -ResourceGroupName $ResourceGroupName -ErrorAction Stop
+} catch {
+    if (!$storageAccount) {
+        Write-Output 'Could not find storage account. Will create one.'
+        $storageAccount = New-AzStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -SkuName 'Standard_LRS' -Kind StorageV2
+    }
 }
 
-if ($PolicyParameters.Count -gt 0 -and $contentUri) {
-    New-GuestConfigurationPolicy `
-        -PolicyId $PolicyParameters['PolicyId'] `
-        -ContentUri $ContentUri `
-        -DisplayName $PolicyParameters['DisplayName'] `
-        -Description $PolicyParameters['Description'] `
-        -Path $PolicyParameters['Path'] `
-        -Platform $PolicyParameters['Platform'] `
-        -Version $PolicyParameters['Version'] `
-        -Mode $PolicyParameters['Mode'] `
-        -Tag $PolicyParameters['Tag'] `
-        -Verbose
+if ($storageAccount) {
+    if ($PublishPackage) {
+        Write-Output "Publishing Guest Configuration Package $($package.Path) to storage account $($storageAccount.StorageAccountName) in resource group $($storageAccount.ResourceGroupName)"
+        $ContentUri = Publish-GuestConfigurationPackage -Path $package.Path -ResourceGroupName $storageAccount.ResourceGroupName -StorageAccountName $storageAccount.StorageAccountName -StorageContainerName $StorageContainerName -Force | ForEach-Object ContentUri
+    }
 
-    if ($PublishPolicy) {
-        Publish-GuestConfigurationPolicy -Path $PolicyParameters['Path']
+    if ($PolicyParameters.Count -gt 0 -and $contentUri) {
+        Write-Output 'Creating new Guest Configuration Policy with the following parameters'
+        $PolicyParameters
+
+        New-GuestConfigurationPolicy `
+            -PolicyId $PolicyParameters['PolicyId'] `
+            -ContentUri $ContentUri `
+            -DisplayName $PolicyParameters['DisplayName'] `
+            -Description $PolicyParameters['Description'] `
+            -Path $PolicyParameters['Path'] `
+            -Platform $PolicyParameters['Platform'] `
+            -Version $PolicyParameters['Version'] `
+            -Mode $PolicyParameters['Mode'] `
+            -Tag $PolicyParameters['Tag'] `
+            -Verbose
+
+        if ($?) {
+            Write-Output "Publishing Guest Configuration Policy from path $($PolicyParameters['Path'])"
+            Publish-GuestConfigurationPolicy -Path $PolicyParameters['Path']
+        }
     }
 }

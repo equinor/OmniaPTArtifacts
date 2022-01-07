@@ -65,8 +65,8 @@ if (!(Test-Path -Path $ConfigurationFilePath)) {
 
 
 $package = New-GuestConfigurationPackage `
-    -Name 'MyConfig' `
-    -Configuration $ConfigurationFilePath `
+    -Name "$ConfigurationName" `
+    -Configuration "$ConfigurationFilePath" `
     -Type $ConfigurationType `
     -Force
 
@@ -81,8 +81,8 @@ try {
 
 if ($storageAccount) {
     if ($PublishPackage) {
-        Write-Output "Publishing Guest Configuration Package $($package.Path) to storage account $($storageAccount.StorageAccountName) in resource group $($storageAccount.ResourceGroupName)"
-        $ContentUri = Publish-GuestConfigurationPackage -Path $package.Path -ResourceGroupName $storageAccount.ResourceGroupName -StorageAccountName $storageAccount.StorageAccountName -StorageContainerName $StorageContainerName -Force | ForEach-Object ContentUri
+        Write-Output "Publishing Guest Configuration Package '$($package.Path)' to storage account $($storageAccount.StorageAccountName) in resource group $($storageAccount.ResourceGroupName)"
+        $ContentUri = Publish-GuestConfigurationPackage -Path "$($package.Path)" -ResourceGroupName $storageAccount.ResourceGroupName -StorageAccountName $storageAccount.StorageAccountName -StorageContainerName $StorageContainerName -Force | ForEach-Object ContentUri
     }
 
     if ($PolicyParameters.Count -gt 0 -and $contentUri) {
